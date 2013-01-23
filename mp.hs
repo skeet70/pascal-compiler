@@ -12,6 +12,7 @@
 import System.Environment  
 import System.IO  
 import System.Directory  
+import DigitFSA.hs
   
 main = toTry `catch` handler
 
