@@ -8,15 +8,15 @@ import Data.Char
 
 digitFSA :: (String, String, Int, Int) -> (String, String, Int, Int)
 digitFSA (src, lexeme, column_number, line_number)
-    | isDigit stringHead
-        = digitFSA (tail src, (show stringHead) : lexeme, column_number + 1, line_number)
-    | stringHead == 'e' || stringHead == 'E' 
-        = digitFSAforE (tail src, (show stringHead) : lexeme, column_number + 1, line_number)
-    | stringHead == '.'                     
-        = digitFSAforPeriod (tail src, (show stringHead) : lexeme, column_number + 1, line_number)
+    | stringHead == ['0'..'9']
+        = digitFSA          (tail src, lexeme ++ stringHead, column_number + 1, line_number)
+    | stringHead == "e" || stringHead == "E" 
+        = digitFSAforE      (tail src, lexeme ++ stringHead, column_number + 1, line_number)
+    | stringHead == "."                     
+        = digitFSAforPeriod (tail src, lexeme ++ stringHead, column_number + 1, line_number)
     | otherwise                             
         = (src, lexeme, column_number, line_number)
-    where stringHead = head src
+    where stringHead = show ( head src)
 
 digitFSAforE :: (String, String, Int, Int) -> (String, String, Int, Int)
 digitFSAforE (src, lexeme, column_number, line_number) = (src, lexeme, column_number, line_number)
