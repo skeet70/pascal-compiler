@@ -14,7 +14,6 @@ module Scanner
     ) where
 
 import Data.Char (isDigit, isLetter, isControl, isSpace)
-import Data.List (drop)
 
 -- | Starts with the input string (assuming at first character of next lexeme),
 -- an empty lexeme, and the current line and column numbers.
@@ -45,9 +44,9 @@ getToken (source, lexeme, columnNumber, lineNumber)
 skipWhitespace :: (String, String, Int, Int) -> (String, String, Int, Int)
 skipWhitespace (source, lexeme, columnNumber, lineNumber)
     | isControl nextChar
-        = getToken (drop 1 source, lexeme, 0, lineNumber + 1)
+        = getToken (tail source, lexeme, 0, lineNumber + 1)
     | nextChar == ' '
-        = getToken (drop 1 source, lexeme, columnNumber + 1, lineNumber)
+        = getToken (tail source, lexeme, columnNumber + 1, lineNumber)
   where
     nextChar = head source  -- get the next character
 
