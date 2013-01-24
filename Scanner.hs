@@ -14,6 +14,7 @@ module Scanner
     ) where
 
 import Data.Char (isDigit, isLetter, isControl, isSpace)
+import Data.List (drop)
 
 -- | Starts with the input string (assuming at first character of next lexeme),
 -- an empty lexeme, and the current line and column numbers.
@@ -22,31 +23,31 @@ import Data.Char (isDigit, isLetter, isControl, isSpace)
 getToken :: (String, String, Int, Int) -> (String, String, Int, Int)
 getToken (source, lexeme, columnNumber, lineNumber)
     | isSpace nextChar
-        = skipWhitespace (nextChar : source, lexeme, columnNumber, lineNumber)
+        = skipWhitespace (source, lexeme, columnNumber, lineNumber)
     | nextChar == '('
-        = lParenFSA (nextChar : source, lexeme, columnNumber, lineNumber)
+        = lParenFSA (source, lexeme, columnNumber, lineNumber)
     | nextChar == ')'
-        = rParenFSA (nextChar : source, lexeme, columnNumber, lineNumber)
+        = rParenFSA (source, lexeme, columnNumber, lineNumber)
     | nextChar == ';'
-        = semicolonFSA (nextChar : source, lexeme, columnNumber, lineNumber)
+        = semicolonFSA (source, lexeme, columnNumber, lineNumber)
     | nextChar == ':'
-        = colonFSA (nextChar : source, lexeme, columnNumber, lineNumber)
+        = colonFSA (source, lexeme, columnNumber, lineNumber)
     | isLetter nextChar
-        = letterFSA (nextChar : source, lexeme, columnNumber, lineNumber)
+        = letterFSA (source, lexeme, columnNumber, lineNumber)
     | isDigit nextChar
-        = digitFSA (nextChar : source, lexeme, columnNumber, lineNumber)
+        = digitFSA (source, lexeme, columnNumber, lineNumber)
   where
     nextChar = head source  -- get the next character
 
--- | skipWhitespace expects to recieve parameters that have already consumed the
--- whitespace or control character, and calls getToken with the
+-- | skipWhitespace expects to recieve parameters that have already consumed
+-- the whitespace or control character, and calls getToken with the
 -- modified source and column/line numbers.
 skipWhitespace :: (String, String, Int, Int) -> (String, String, Int, Int)
 skipWhitespace (source, lexeme, columnNumber, lineNumber)
     | isControl nextChar
-        = getToken (source, lexeme, 0, lineNumber + 1)
+        = getToken (drop 1 source, lexeme, 0, lineNumber + 1)
     | nextChar == ' '
-        = getToken (source, lexeme, columnNumber + 1, lineNumber)
+        = getToken (drop 1 source, lexeme, columnNumber + 1, lineNumber)
   where
     nextChar = head source  -- get the next character
 
