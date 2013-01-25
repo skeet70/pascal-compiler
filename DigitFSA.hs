@@ -16,13 +16,17 @@ digitFSA :: (String, String, Int, Int) -> (String, String, Int, Int)
 digitFSA (src, lexeme, column_number, line_number)
     | stringHead `elem` ['0'..'9']
         = digitFSA          (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
-    | stringHead == 'e' || stringHead == 'E' 
+    | (stringHead == 'e' && stringNext `elem` ['0'..'9']) || (stringHead == 'E' && stringNext `elem` ['0'..'9'])
         = digitFSAforE      (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
-    | stringHead == '.'                     
+    | stringHead == '.' && stringNext `elem` ['0'..'9']                    
         = digitFSAforPeriod (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
     | otherwise                             
         = (src, lexeme, column_number, line_number)
     where stringHead = if src == [] then ' ' else head src
+          stringNext 
+              | stringHead /= ' ' && tail src /= [] = src !! 1
+              | otherwise = 'x' --This is the failure character.
+        
 
 --Sub-level state machine when an E or an e is found
 --
