@@ -15,9 +15,9 @@ import System.IO
 import System.Directory
 import Prelude hiding (catch)
 import Control.Exception
-
 import Scanner
-
+import DigitFSA
+  
 main = toTry `catch` handler
 
 toTry :: IO ()
