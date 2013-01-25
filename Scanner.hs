@@ -23,18 +23,37 @@ getToken :: (String, String, Int, Int) -> (String, String, Int, Int)
 getToken (source, lexeme, columnNumber, lineNumber)
     | isSpace nextChar
         = skipWhitespace (source, lexeme, columnNumber, lineNumber)
-    | nextChar == '('
-        = lParenFSA (source, lexeme, columnNumber, lineNumber)
-    | nextChar == ')'
-        = rParenFSA (source, lexeme, columnNumber, lineNumber)
-    | nextChar == ';'
-        = semicolonFSA (source, lexeme, columnNumber, lineNumber)
-    | nextChar == ':'
-        = colonFSA (source, lexeme, columnNumber, lineNumber)
     | isLetter nextChar
         = letterFSA (source, lexeme, columnNumber, lineNumber)
     | isDigit nextChar
         = digitFSA (source, lexeme, columnNumber, lineNumber)
+    | nextChar == '"'
+        = stringLitFSA (source, lexeme, columnNumber, lineNumber)
+    | nextChar == ':'
+        = colonFSA (source, lexeme, columnNumber, lineNumber)
+    | nextChar == '>'
+        = gtFSA (source, lexeme, columnNumber, lineNumber)
+    | nextChar == '<'
+        = ltFSA (source, lexeme, columnNumber, lineNumber)
+    | nextChar == '('
+        = (tail source, "(", columnNumber + 1, lineNumber)
+    | nextChar == ')'
+        = (tail source, ")", columnNumber + 1, lineNumber)
+    | nextChar == ';'
+        = (tail source, ";", columnNumber + 1, lineNumber)
+    | nextChar == '='
+        = (tail source, "=", columnNumber + 1, lineNumber)
+    | nextChar == '.'
+        = (tail source, ".", columnNumber + 1, lineNumber)
+    | nextChar == ','
+        = (tail source, ",", columnNumber + 1, lineNumber)
+    | nextChar == '+'
+        = (tail source, "+", columnNumber + 1, lineNumber)
+    | nextChar == '-'
+        = (tail source, "-", columnNumber + 1, lineNumber)
+    | nextChar == '*'
+        = (tail source, "*", columnNumber + 1, lineNumber)
+    | otherwise (tail source, "MP_ERROR", columnNumber + 1, lineNumber)
   where
     nextChar = head source  -- get the next character
 
