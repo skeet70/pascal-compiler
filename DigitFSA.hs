@@ -12,7 +12,7 @@ import Data.Char
 --            column_number - The distance inside of the src string
 --            line_number - The line in the token
 --Returns: Tuple containing the above
-digitFSA :: (String, String, Token, Int, Int) -> (String, String, Token, Int, Int)
+digitFSA :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
 digitFSA (src, lexeme, column_number, line_number)
     | stringHead `elem` ['0'..'9']
         = digitFSA          (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
@@ -34,7 +34,7 @@ digitFSA (src, lexeme, column_number, line_number)
 --            column_number - The distance inside of the src string
 --            line_number - The line in the token
 --Returns: Tuple containing the above
-digitFSAforE :: (String, String, Token, Int, Int) -> (String, String, Token, Int, Int)
+digitFSAforE :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
 digitFSAforE (src, lexeme, column_number, line_number)
     | stringHead `elem` ['0'..'9']
         = digitFSAforE (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
@@ -49,7 +49,7 @@ digitFSAforE (src, lexeme, column_number, line_number)
 --            column_number - The distance inside of the src string
 --            line_number - The line in the token
 --Returns: Tuple containing the above
-digitFSAforPeriod :: (String, String, Token, Int, Int) -> (String, String, Token, Int, Int)
+digitFSAforPeriod :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
 digitFSAforPeriod (src, lexeme, column_number, line_number)
     | stringHead `elem` ['0'..'9']
         = digitFSAforPeriod (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)

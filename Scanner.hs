@@ -15,7 +15,7 @@ import Data.Char (isDigit, isLetter, isControl, isSpace)
 -- an empty lexeme, and the current line and column numbers.
 -- | Returns all the same things, expecting the reciever to extract the final
 -- token
-getToken :: (String, String, Token, Int, Int) -> (String, String, Token, Int, Int)
+getToken :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
 getToken (source, lexeme, columnNumber, lineNumber)
     | isSpace nextChar
         = skipWhitespace (source, lexeme, columnNumber, lineNumber)
@@ -57,8 +57,8 @@ getToken (source, lexeme, columnNumber, lineNumber)
 -- | skipWhitespace expects to recieve parameters that have already consumed
 -- the whitespace or control character, and calls getToken with the
 -- modified source and column/line numbers.
-skipWhitespace :: (String, String, Token, Int, Int) -> (String, String, Token, Int, Int)
-skipWhitespace (source, lexeme, columnNumber, lineNumber)
+skipWhitespace :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
+skipWhitespace (source, lexeme, token, columnNumber, lineNumber)
     | isControl nextChar
         = getToken (tail source, lexeme, 0, lineNumber + 1)
     | nextChar == ' '
@@ -68,12 +68,12 @@ skipWhitespace (source, lexeme, columnNumber, lineNumber)
 
 -- | Gets the lexeme currently being passed around and returns it.
 getLexeme :: (String, String, Token, Int, Int) -> String
-getLexeme (source, lexeme, columnNumber, lineNumber) = lexeme
+getLexeme (source, lexeme, token, columnNumber, lineNumber) = lexeme
 
 -- | Gets the line number currently being passed around and returns it.
 getLineNumber :: (String, String, Token, Int, Int) -> Int
-getLineNumber (source, lexeme, columnNumber, lineNumber) = lineNumber
+getLineNumber (source, lexeme, token, columnNumber, lineNumber) = lineNumber
 
 -- | Gets the column number currently being passed around and returns it.
 getColumnNumber :: (String, String, Token, Int, Int) -> Int
-getColumnNumber (source, lexeme, columnNumber, lineNumber) = columnNumber
+getColumnNumber (source, lexeme, token, columnNumber, lineNumber) = columnNumber
