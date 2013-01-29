@@ -3,6 +3,8 @@
 --
 -- This file contains all the methods that deal with letters and characters
 
+module LetterFSA where
+
 import Data.Char
 
 -- The FSA that returns anything that can be an Identifier
@@ -11,7 +13,7 @@ identifierFSA (source, lexeme, colNum, lineNum)
   | isAlphaNum (head source) = identifierFSA(tail source, lexeme ++ [head source], colNum+1, lineNum)
   | (head source) == '_'     = identifierFSA(tail source, lexeme ++ [head source], colNum+1, lineNum)
   | otherwise                = (source, lexeme, colNum, lineNum)
-  
+
 -- The FSA that returns anything that can be a string
 stringFSA (source, lexeme, colNum, lineNum)
   | null source                                                                  = (source, lexeme, colNum, lineNum)
