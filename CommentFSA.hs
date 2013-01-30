@@ -1,4 +1,5 @@
 import TokenTable
+import Scanner
 --Author Tyler J. Huffman
 --Top-level state machine to remove comments from a source string
 --Returns the ErrorCodes MP_RUN_STRING token if no FSA is valid
@@ -20,7 +21,7 @@ commentFSA (src, lexeme, column_number, line_number)
 bracketFSA :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
 bracketFSA (src, lexeme, column_number, line_number)
     | stringHead == Just '}'
-        = (tail src, lexeme, IdentifiersAndLiterals MP_STRING_LIT, column_number, line_number)
+        = getToken (tail src, lexeme , column_number, line_number)
     | stringHead == Nothing
         = (src, lexeme, ErrorCodes MP_RUN_STRING, column_number, line_number)
     | otherwise
@@ -32,7 +33,7 @@ bracketFSA (src, lexeme, column_number, line_number)
 parenFSA :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
 parenFSA (src, lexeme, column_number, line_number)
     | stringHead == Just '*' && stringNext == Just ')'
-        = (tail (tail src), lexeme, IdentifiersAndLiterals MP_STRING_LIT, column_number, line_number)
+        = getToken (tail (tail src), lexeme, column_number, line_number)
     | stringHead == Nothing
         = (src, lexeme, ErrorCodes MP_RUN_STRING, column_number, line_number)
     | otherwise
