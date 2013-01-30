@@ -4,6 +4,7 @@
 module DigitFSA where
 import Data.List
 import Data.Char
+import TokenTable
 
 --Top-level state machine to obtain a valid token from the string
 --
@@ -13,7 +14,7 @@ import Data.Char
 --            line_number - The line in the token
 --Returns: Tuple containing the above
 digitFSA :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
-digitFSA (src, lexeme, tokenType, column_number, line_number)
+digitFSA (src, lexeme, column_number, line_number)
     | stringHead `elem` ['0'..'9']
         = digitFSA          (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
     | (stringHead == 'e' && stringNext `elem` ['0'..'9']) || (stringHead == 'E' && stringNext `elem` ['0'..'9'])
@@ -21,7 +22,7 @@ digitFSA (src, lexeme, tokenType, column_number, line_number)
     | stringHead == '.' && stringNext `elem` ['0'..'9']
         = digitFSAforPeriod (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
     | otherwise
-        = (src, lexeme, column_number, IdentifiersAndLiterals MP_INTEGER_LIT, line_number)
+        = (src, lexeme, IdentifiersAndLiterals MP_INTEGER_LIT, column_number,  line_number)
     where stringHead = if src == [] then ' ' else head src
           stringNext
               | stringHead /= ' ' && tail src /= [] = src !! 1
