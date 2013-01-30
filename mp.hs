@@ -7,7 +7,7 @@
 -- modifying the pattern-matching at the start of the "do"
 -- function
 --
--- The toTry function then reads the file into a string, and calls
+-- The driver function then reads the file into a string, and calls
 -- getToken with the default values.
 
 import System.Environment
@@ -16,20 +16,22 @@ import System.Directory
 import Prelude hiding (catch)
 import Control.Exception
 import Scanner
-import DigitFSA
-  
-main = toTry `catch` handler
 
-toTry :: IO ()
-toTry = do (filename:_) <- getArgs
-            if (dropWhile (/= '.') filename) == ".mp"
-                then getNextToken (source, lexeme, columnNumber, lineNumber)
-                  where
-                    source = read filename
-                    lexeme = ""
-                    columnNumber = 0
-                    lineNumber = 0
-                else putStrLn "Please insert a valid file."
+main = driver `catch` inputError
 
-handler :: IOError -> IO ()
-handler e = putStrLn "Please insert a valid file."
+driver :: IO ()
+driver = do (filename:_) <- getArgs
+            if ((dropWhile (/= '.') filename) == ".mp")
+            then extractToken (getToken (read filename, lexeme, column, line))
+            else putStrLn "Please insert a valid file."
+              where
+                lexeme = ""
+                column = 0
+                line = 0
+
+extractToken :: (String, String, Token, Int, Int) -> IO ()
+extractToken (source, lexeme, token, column, line) = do
+    putStrLn (token ++ " " ++ show line ++ " " ++ show column ++ " " ++ lexeme)
+
+inputError :: IOError -> IO ()
+inputError e = putStrLn "Please insert a valid file."

@@ -12,21 +12,20 @@ import Data.Char
 --            column_number - The distance inside of the src string
 --            line_number - The line in the token
 --Returns: Tuple containing the above
-digitFSA :: (String, String, Int, Int) -> (String, String, Int, Int)
-digitFSA (src, lexeme, column_number, line_number)
+digitFSA :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
+digitFSA (src, lexeme, tokenType, column_number, line_number)
     | stringHead `elem` ['0'..'9']
         = digitFSA          (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
     | (stringHead == 'e' && stringNext `elem` ['0'..'9']) || (stringHead == 'E' && stringNext `elem` ['0'..'9'])
         = digitFSAforE      (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
-    | stringHead == '.' && stringNext `elem` ['0'..'9']                    
+    | stringHead == '.' && stringNext `elem` ['0'..'9']
         = digitFSAforPeriod (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
-    | otherwise                             
-        = (src, lexeme, column_number, line_number)
+    | otherwise
+        = (src, lexeme, column_number, IdentifiersAndLiterals MP_INTEGER_LIT, line_number)
     where stringHead = if src == [] then ' ' else head src
-          stringNext 
+          stringNext
               | stringHead /= ' ' && tail src /= [] = src !! 1
               | otherwise = 'x' --This is the failure character.
-        
 
 --Sub-level state machine when an E or an e is found
 --
@@ -35,12 +34,12 @@ digitFSA (src, lexeme, column_number, line_number)
 --            column_number - The distance inside of the src string
 --            line_number - The line in the token
 --Returns: Tuple containing the above
-digitFSAforE :: (String, String, Int, Int) -> (String, String, Int, Int)
-digitFSAforE (src, lexeme, column_number, line_number) 
+digitFSAforE :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
+digitFSAforE (src, lexeme, column_number, line_number)
     | stringHead `elem` ['0'..'9']
         = digitFSAforE (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
     | otherwise
-        = (src, lexeme, column_number, line_number)
+        = (src, lexeme, IdentifiersAndLiterals MP_FLOAT_LIT, column_number, line_number)
     where stringHead = if src == [] then ' ' else head src
 
 --Sub-level state machine for when a period is found in the code
@@ -50,14 +49,14 @@ digitFSAforE (src, lexeme, column_number, line_number)
 --            column_number - The distance inside of the src string
 --            line_number - The line in the token
 --Returns: Tuple containing the above
-digitFSAforPeriod :: (String, String, Int, Int) -> (String, String, Int, Int)
-digitFSAforPeriod (src, lexeme, column_number, line_number) 
+digitFSAforPeriod :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
+digitFSAforPeriod (src, lexeme, column_number, line_number)
     | stringHead `elem` ['0'..'9']
         = digitFSAforPeriod (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
     | stringHead == 'e' || stringHead == 'E'
         = digitFSAforE (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
     | otherwise
-        = (src, lexeme, column_number, line_number)
+        = (src, lexeme, IdentifiersAndLiterals MP_FIXED_LIT, column_number, line_number)
     where stringHead = if src == [] then ' ' else head src
 
 --Helper function that turns a Char into a String

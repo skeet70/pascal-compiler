@@ -4,14 +4,10 @@
 -- This file contains all the top level methods required for the Scanner to
 -- function.
 
-module Scanner
-    (
-    , getToken
-    , skipWhitespace
-    , getLexeme
-    , getLineNumber
-    , getColumnNumber
-    ) where
+module Scanner where
+
+import DigitFSA
+import LetterFSA
 
 import Data.Char (isDigit, isLetter, isControl, isSpace)
 
@@ -19,7 +15,7 @@ import Data.Char (isDigit, isLetter, isControl, isSpace)
 -- an empty lexeme, and the current line and column numbers.
 -- | Returns all the same things, expecting the reciever to extract the final
 -- token
-getToken :: (String, String, Int, Int) -> (String, String, Int, Int)
+getToken :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
 getToken (source, lexeme, columnNumber, lineNumber)
     | isSpace nextChar
         = skipWhitespace (source, lexeme, columnNumber, lineNumber)
@@ -53,15 +49,16 @@ getToken (source, lexeme, columnNumber, lineNumber)
         = (tail source, "-", columnNumber + 1, lineNumber)
     | nextChar == '*'
         = (tail source, "*", columnNumber + 1, lineNumber)
-    | otherwise (tail source, "MP_ERROR", columnNumber + 1, lineNumber)
+    | otherwise
+        = (tail source, "MP_ERROR", columnNumber + 1, lineNumber)
   where
     nextChar = head source  -- get the next character
 
 -- | skipWhitespace expects to recieve parameters that have already consumed
 -- the whitespace or control character, and calls getToken with the
 -- modified source and column/line numbers.
-skipWhitespace :: (String, String, Int, Int) -> (String, String, Int, Int)
-skipWhitespace (source, lexeme, columnNumber, lineNumber)
+skipWhitespace :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
+skipWhitespace (source, lexeme, token, columnNumber, lineNumber)
     | isControl nextChar
         = getToken (tail source, lexeme, 0, lineNumber + 1)
     | nextChar == ' '
@@ -70,13 +67,13 @@ skipWhitespace (source, lexeme, columnNumber, lineNumber)
     nextChar = head source  -- get the next character
 
 -- | Gets the lexeme currently being passed around and returns it.
-getLexeme :: (String, String, Int, Int) -> String
-getLexeme (source, lexeme, columnNumber, lineNumber) = lexeme
+getLexeme :: (String, String, Token, Int, Int) -> String
+getLexeme (source, lexeme, token, columnNumber, lineNumber) = lexeme
 
 -- | Gets the line number currently being passed around and returns it.
-getLineNumber :: (String, String, Int, Int) -> Int
-getLineNumber (source, lexeme, columnNumber, lineNumber) = lineNumber
+getLineNumber :: (String, String, Token, Int, Int) -> Int
+getLineNumber (source, lexeme, token, columnNumber, lineNumber) = lineNumber
 
 -- | Gets the column number currently being passed around and returns it.
-getColumnNumber :: (String, String, Int, Int) -> Int
-getColumnNumber (source, lexeme, columnNumber, lineNumber) = columnNumber
+getColumnNumber :: (String, String, Token, Int, Int) -> Int
+getColumnNumber (source, lexeme, token, columnNumber, lineNumber) = columnNumber
