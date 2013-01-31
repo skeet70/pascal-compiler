@@ -1,7 +1,7 @@
 --Authored by Tyler J. Huffman
 --
 --This is the list of functions used in the microPascal compiler
-module DigitFSA where
+module DigitFSA (digitFSA) where
 import Data.List
 import Data.Char
 import TokenTable
