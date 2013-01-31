@@ -16,7 +16,7 @@ data ErrorCodes = MP_RUN_COMMENT | MP_RUN_STRING | MP_ERROR
 
 data Symbols = MP_PERIOD | MP_COMMA | MP_SCOLON | MP_LPAREN | MP_EQUAL
     | MP_GTHAN | MP_LTHAN | MP_LEQUAL | MP_NEQUAL | MP_ASSIGN | MP_PLUS
-    | MP_MINUS | MP_TIMES | MP_COLON
+    | MP_MINUS | MP_TIMES | MP_COLON | MP_GEQUAL
     deriving (Eq, Show, Read)
 
 data EndOfFile = MP_EOF
