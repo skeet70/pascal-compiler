@@ -37,7 +37,7 @@ extractData (source, lexeme, token, column, line) = do
     putStrLn (unwrapToken token ++ " " ++ show line ++ " " ++ show column ++ " " ++ lexeme)
     if token == EndOfFile MP_EOF
     then putStrLn "Done Scanning."
-    else extractData $ getToken (source, lexeme, column, line)
+    else extractData $ getToken (source, "", column, line)
 
 inputError :: IOError -> IO ()
 inputError e = putStrLn "Please insert a valid file."
