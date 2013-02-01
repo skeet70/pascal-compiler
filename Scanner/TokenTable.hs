@@ -1,5 +1,6 @@
-module TokenTable where
 --Authored by: Tyler J. Huffman
+module Scanner.TokenTable where
+
 data ReservedWords = MP_AND | MP_BEGIN | MP_DIV | MP_DO | MP_DOWNTO | MP_ELSE
     | MP_END | MP_FIXED | MP_FLOAT | MP_FOR | MP_FUNCTION | MP_IF
     | MP_INTEGER | MP_MOD | MP_NOT | MP_OR | MP_PROCEDURE | MP_PROGRAM

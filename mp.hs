@@ -15,8 +15,8 @@ import System.IO
 import System.Directory
 import Prelude hiding (catch)
 import Control.Exception
-import Scanner
-import TokenTable
+import Scanner.Dispatcher
+import Scanner.TokenTable
 
 main = driver `catch` inputError
 

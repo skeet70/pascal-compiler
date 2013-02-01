@@ -3,10 +3,10 @@
 -- Most Recent Update: 1/30/2013
 -- This file contains the State-Machines that relate to Identifiers, Strings, and Symbols.
 
-module LetterFSA where
+module Scanner.LetterFSA where
 
 import Data.Char
-import TokenTable
+import Scanner.TokenTable
 
 -- The FSA that returns anything that can be an Identifier.
 -- *Added the ability to: send an error token when there is not a correct leading character after an underscore,

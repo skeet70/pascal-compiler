@@ -1,14 +1,14 @@
 -- Authored by: Ryan "Murph" Murphy
 -- Date: 1/24/2013
 --
--- This file contains all the top level methods required for the Scanner to
+-- This file contains all the top level methods required for the scanner to
 -- function.
 
-module Scanner where
+module Scanner.Dispatcher where
 
-import DigitFSA
-import LetterFSA
-import TokenTable
+import Scanner.DigitFSA
+import Scanner.LetterFSA
+import Scanner.TokenTable
 
 import Data.Char (isDigit, isLetter, isControl, isSpace)
 

@@ -1,10 +1,11 @@
-import TokenTable
-import Scanner
+import Scanner.TokenTable
+import Scanner.Dispatcher
+
 --Author Tyler J. Huffman
 --Top-level state machine to remove comments from a source string
 --Returns the ErrorCodes MP_RUN_STRING token if no FSA is valid
 commentFSA :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
-commentFSA (src, lexeme, column_number, line_number) 
+commentFSA (src, lexeme, column_number, line_number)
     | stringHead == Just '{'
         = bracketFSA (tail src, lexeme, column_number, line_number)
     | stringHead == Just '(' && stringNext == Just '*'

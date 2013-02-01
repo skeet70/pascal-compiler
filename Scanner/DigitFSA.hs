@@ -1,10 +1,10 @@
 --Authored by Tyler J. Huffman
 --
 --This is the list of functions used in the microPascal compiler
-module DigitFSA (digitFSA) where
+module Scanner.DigitFSA (digitFSA) where
 import Data.List
 import Data.Char
-import TokenTable
+import Scanner.TokenTable
 
 --Top-level state machine to obtain a valid token from the string
 --
