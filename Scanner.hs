@@ -8,6 +8,7 @@ module Scanner where
 
 import DigitFSA
 import LetterFSA
+import TokenTable
 
 import Data.Char (isDigit, isLetter, isControl, isSpace)
 
@@ -19,7 +20,7 @@ getToken :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
 getToken (source, lexeme, columnNumber, lineNumber)
     | isSpace nextChar
         = skipWhitespace (source, lexeme, columnNumber, lineNumber)
-    | isLetter nextChar
+    | isLetter nextChar || '_' == nextChar
         = identifierFSA (source, lexeme, columnNumber, lineNumber)
     | isDigit nextChar
         = digitFSA (source, lexeme, columnNumber, lineNumber)
@@ -32,25 +33,25 @@ getToken (source, lexeme, columnNumber, lineNumber)
     | nextChar == '<'
         = lthanFSA (source, lexeme, columnNumber, lineNumber)
     | nextChar == '('
-        = (tail source, "(", columnNumber + 1, lineNumber)
+        = (tail source, "(", Symbols MP_LPAREN, columnNumber + 1, lineNumber)
     | nextChar == ')'
-        = (tail source, ")", columnNumber + 1, lineNumber)
+        = (tail source, ")", Symbols MP_RPAREN, columnNumber + 1, lineNumber)
     | nextChar == ';'
-        = (tail source, ";", columnNumber + 1, lineNumber)
+        = (tail source, ";", Symbols MP_SCOLON, columnNumber + 1, lineNumber)
     | nextChar == '='
-        = (tail source, "=", columnNumber + 1, lineNumber)
+        = (tail source, "=", Symbols MP_EQUAL, columnNumber + 1, lineNumber)
     | nextChar == '.'
-        = (tail source, ".", columnNumber + 1, lineNumber)
+        = (tail source, ".", Symbols MP_PERIOD, columnNumber + 1, lineNumber)
     | nextChar == ','
-        = (tail source, ",", columnNumber + 1, lineNumber)
+        = (tail source, ",", Symbols MP_COMMA, columnNumber + 1, lineNumber)
     | nextChar == '+'
-        = (tail source, "+", columnNumber + 1, lineNumber)
+        = (tail source, "+", Symbols MP_PLUS, columnNumber + 1, lineNumber)
     | nextChar == '-'
-        = (tail source, "-", columnNumber + 1, lineNumber)
+        = (tail source, "-", Symbols MP_MINUS, columnNumber + 1, lineNumber)
     | nextChar == '*'
-        = (tail source, "*", columnNumber + 1, lineNumber)
+        = (tail source, "*", Symbols MP_TIMES, columnNumber + 1, lineNumber)
     | otherwise
-        = (tail source, "MP_ERROR", columnNumber + 1, lineNumber)
+        = (tail source, "", ErrorCodes MP_ERROR, columnNumber + 1, lineNumber)
   where
     nextChar = head source  -- get the next character
 
@@ -58,7 +59,7 @@ getToken (source, lexeme, columnNumber, lineNumber)
 -- the whitespace or control character, and calls getToken with the
 -- modified source and column/line numbers.
 skipWhitespace :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
-skipWhitespace (source, lexeme, token, columnNumber, lineNumber)
+skipWhitespace (source, lexeme, columnNumber, lineNumber)
     | isControl nextChar
         = getToken (tail source, lexeme, 0, lineNumber + 1)
     | nextChar == ' '

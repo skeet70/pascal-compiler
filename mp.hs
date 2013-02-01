@@ -16,22 +16,23 @@ import System.Directory
 import Prelude hiding (catch)
 import Control.Exception
 import Scanner
+import TokenTable
 
 main = driver `catch` inputError
 
 driver :: IO ()
 driver = do (filename:_) <- getArgs
             if ((dropWhile (/= '.') filename) == ".mp")
-            then extractToken (getToken (read filename, lexeme, column, line))
+            then extractData (getToken (read filename, lexeme, column, line))
             else putStrLn "Please insert a valid file."
               where
                 lexeme = ""
                 column = 0
                 line = 0
 
-extractToken :: (String, String, Token, Int, Int) -> IO ()
-extractToken (source, lexeme, token, column, line) = do
-    putStrLn (token ++ " " ++ show line ++ " " ++ show column ++ " " ++ lexeme)
+extractData :: (String, String, Token, Int, Int) -> IO ()
+extractData (source, lexeme, token, column, line) = do
+    putStrLn (unwrapToken token ++ " " ++ show line ++ " " ++ show column ++ " " ++ lexeme)
 
 inputError :: IOError -> IO ()
 inputError e = putStrLn "Please insert a valid file."
