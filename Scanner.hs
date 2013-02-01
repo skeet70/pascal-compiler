@@ -18,6 +18,8 @@ import Data.Char (isDigit, isLetter, isControl, isSpace)
 -- token
 getToken :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
 getToken (source, lexeme, columnNumber, lineNumber)
+    | null source
+        = (source, lexeme, EndOfFile MP_EOF, columnNumber, lineNumber)
     | isSpace nextChar
         = skipWhitespace (source, lexeme, columnNumber, lineNumber)
     | isLetter nextChar || '_' == nextChar

@@ -25,7 +25,7 @@ driver = do
     (filename:_) <- getArgs
     source <- readFile filename
     if ((dropWhile (/= '.') filename) == ".mp")
-    then extractData (getToken (source, lexeme, column, line))
+    then extractData $ getToken (source, lexeme, column, line)
     else putStrLn "Please insert a valid file."
       where
         lexeme = ""
@@ -34,7 +34,10 @@ driver = do
 
 extractData :: (String, String, Token, Int, Int) -> IO ()
 extractData (source, lexeme, token, column, line) = do
-    putStrLn (unwrapToken token ++ " " ++ show line ++ " " ++ show column ++ " " ++ lexeme)
+    if token == EndOfFile MP_EOF
+    then putStrLn ("End of File")
+    else putStrLn (unwrapToken token ++ " " ++ show line ++ " " ++ show column ++ " " ++ lexeme)
+    --extractData $ getToken (source, lexeme, column, line)
 
 inputError :: IOError -> IO ()
 inputError e = putStrLn "Please insert a valid file."
