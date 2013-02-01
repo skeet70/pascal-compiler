@@ -65,6 +65,8 @@ gthanFSA (source, lexeme, colNum, lineNum)
         = (drop 2 source, lexeme ++ (charToString (fromJust stringHead)) ++ (charToString (fromJust stringNext)), Symbol MP_GEQUAL, colNum+2, lineNum)
     | stringHead == Just '>'
         = (tail source, lexeme ++ (charToString (fromJust stringHead)), Symbol MP_GTHAN, colNum+1, lineNum)
+    | otherwise
+        = (source, lexeme, ErrorCode MP_ERROR, colNum, lineNum) --Should never hit this line
   where
     stringHead = if null source then Nothing else Just (head source)
     stringNext
@@ -80,6 +82,8 @@ lthanFSA (source, lexeme, colNum, lineNum)
         = (drop 2 source, lexeme ++ (charToString (fromJust stringHead)) ++ (charToString (fromJust stringNext)), Symbol MP_NEQUAL, colNum+2, lineNum)
     | stringHead == Just '<'
         = (tail source, lexeme ++ (charToString (fromJust stringHead)), Symbol MP_LTHAN, colNum+1, lineNum)
+    | otherwise
+        = (source, lexeme, ErrorCode MP_ERROR, colNum, lineNum) --Should never hit this line
   where
     stringHead = if null source then Nothing else Just (head source)
     stringNext
@@ -93,6 +97,8 @@ colonFSA (source, lexeme, colNum, lineNum)
         = (drop 2 source, lexeme ++ (charToString (fromJust stringHead)) ++ (charToString (fromJust stringNext)), Symbol MP_ASSIGN, colNum+2, lineNum)
     | stringHead == Just ':'
         = (tail source, lexeme ++ (charToString (fromJust stringHead)), Symbol MP_COLON, colNum+1, lineNum)
+    | otherwise
+        = (source, lexeme, ErrorCode MP_ERROR, colNum, lineNum) --Should never hit this line
   where
     stringHead = if null source then Nothing else Just (head source)
     stringNext
