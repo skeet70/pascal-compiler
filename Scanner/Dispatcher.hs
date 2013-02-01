@@ -1,4 +1,4 @@
--- Authored by: Ryan "Murph" Murphy
+-- Authored by: Ryan "Murph" Murphy, Tyler J. Huffman
 -- Date: 1/24/2013
 --
 -- This file contains all the top level methods required for the scanner to
@@ -9,6 +9,8 @@ module Scanner.Dispatcher where
 import Scanner.DigitFSA
 import Scanner.LetterFSA
 import Scanner.TokenTable
+
+import Data.Maybe
 
 import Data.Char (isDigit, isLetter, isControl, isSpace)
 
@@ -34,26 +36,30 @@ getToken (source, lexeme, columnNumber, lineNumber)
         = gthanFSA (source, lexeme, columnNumber, lineNumber)
     | nextChar == '<'
         = lthanFSA (source, lexeme, columnNumber, lineNumber)
-    | nextChar == '('
-        = (tail source, "(", Symbols MP_LPAREN, columnNumber + 1, lineNumber)
+    | nextChar == '{'
+        = commentFSA (source, lexeme, columnNumber, lineNumber)
+    | nextChar == '(' && take 2 source == "(*"
+        = commentFSA (source, lexeme, columnNumber, lineNumber)
+    | nextChar == '(' && take 2 source /= "(*"
+        = (tail source, "(", Symbol MP_LPAREN, columnNumber + 1, lineNumber)
     | nextChar == ')'
-        = (tail source, ")", Symbols MP_RPAREN, columnNumber + 1, lineNumber)
+        = (tail source, ")", Symbol MP_RPAREN, columnNumber + 1, lineNumber)
     | nextChar == ';'
-        = (tail source, ";", Symbols MP_SCOLON, columnNumber + 1, lineNumber)
+        = (tail source, ";", Symbol MP_SCOLON, columnNumber + 1, lineNumber)
     | nextChar == '='
-        = (tail source, "=", Symbols MP_EQUAL, columnNumber + 1, lineNumber)
+        = (tail source, "=", Symbol MP_EQUAL, columnNumber + 1, lineNumber)
     | nextChar == '.'
-        = (tail source, ".", Symbols MP_PERIOD, columnNumber + 1, lineNumber)
+        = (tail source, ".", Symbol MP_PERIOD, columnNumber + 1, lineNumber)
     | nextChar == ','
-        = (tail source, ",", Symbols MP_COMMA, columnNumber + 1, lineNumber)
+        = (tail source, ",", Symbol MP_COMMA, columnNumber + 1, lineNumber)
     | nextChar == '+'
-        = (tail source, "+", Symbols MP_PLUS, columnNumber + 1, lineNumber)
+        = (tail source, "+", Symbol MP_PLUS, columnNumber + 1, lineNumber)
     | nextChar == '-'
-        = (tail source, "-", Symbols MP_MINUS, columnNumber + 1, lineNumber)
+        = (tail source, "-", Symbol MP_MINUS, columnNumber + 1, lineNumber)
     | nextChar == '*'
-        = (tail source, "*", Symbols MP_TIMES, columnNumber + 1, lineNumber)
+        = (tail source, "*", Symbol MP_TIMES, columnNumber + 1, lineNumber)
     | otherwise
-        = (tail source, "", ErrorCodes MP_ERROR, columnNumber + 1, lineNumber)
+        = (tail source, "", ErrorCode MP_ERROR, columnNumber + 1, lineNumber)
   where
     nextChar = head source  -- get the next character
 
@@ -63,11 +69,57 @@ getToken (source, lexeme, columnNumber, lineNumber)
 skipWhitespace :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
 skipWhitespace (source, lexeme, columnNumber, lineNumber)
     | isControl nextChar
-        = getToken (tail source, lexeme, 0, lineNumber + 1)
+        = getToken (tail source, lexeme, 1, lineNumber + 1)
     | nextChar == ' '
         = getToken (tail source, lexeme, columnNumber + 1, lineNumber)
   where
     nextChar = head source  -- get the next character
+
+-- | Top-level state machine to remove comments from a source string
+-- | Returns the ErrorCode MP_RUN_STRING token if no FSA is valid
+commentFSA :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
+commentFSA (source, lexeme, columnNumber, lineNumber)
+    | stringHead == Just '{'
+        = bracketFSA (tail source, lexeme, columnNumber + 1, lineNumber)
+    | stringHead == Just '(' && stringNext == Just '*'
+        = parenFSA (drop 2 source, lexeme, columnNumber + 1, lineNumber)
+    | otherwise
+        = (tail source, lexeme, ErrorCode MP_ERROR, columnNumber + 1, lineNumber)
+  where stringHead = if null source then Nothing else Just (head source)
+        stringNext
+            | stringHead /= Nothing && tail source /= [] = Just (source !! 1)
+            | otherwise = Nothing
+
+-- | Low-level state machine to run when a { comment is found
+-- | Returns the IdentifierOrLiteral MP_STRING_LIT token
+bracketFSA :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
+bracketFSA (source, lexeme, columnNumber, lineNumber)
+    | stringHead == Just '}'
+        = getToken (tail source, lexeme , columnNumber + 1, lineNumber)
+    | stringHead == Nothing
+        = (source, lexeme, ErrorCode MP_RUN_COMMENT, columnNumber, lineNumber)
+    | isControl (fromJust stringHead)
+        = bracketFSA(tail source, lexeme , 1, lineNumber + 1)
+    | otherwise
+        = bracketFSA(tail source, lexeme, columnNumber + 1, lineNumber)
+  where stringHead = if source == [] then Nothing else Just (head source)
+
+-- | Low-level state machine to run when a (* comment is found
+-- | Returns the IdentifierOrLiteral MP_STRING_LIT token
+parenFSA :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
+parenFSA (source, lexeme, columnNumber, lineNumber)
+    | stringHead == Just '*' && stringNext == Just ')'
+        = getToken (drop 2 source, lexeme, columnNumber + 1, lineNumber)
+    | stringHead == Nothing
+        = (source, lexeme, ErrorCode MP_RUN_COMMENT, columnNumber, lineNumber)
+    | isControl (fromJust stringHead)
+        = parenFSA(tail source, lexeme , 1, lineNumber + 1)
+    | otherwise
+        = parenFSA (tail source, lexeme, columnNumber + 1, lineNumber)
+  where stringHead = if source == [] then Nothing else Just (head source)
+        stringNext
+            | stringHead /= Nothing && tail source /= [] = Just (source !! 1)
+            | otherwise = Nothing
 
 -- | Gets the lexeme currently being passed around and returns it.
 getLexeme :: (String, String, Token, Int, Int) -> String
