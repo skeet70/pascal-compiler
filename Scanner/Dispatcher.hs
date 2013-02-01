@@ -28,7 +28,7 @@ getToken (source, lexeme, columnNumber, lineNumber)
         = identifierFSA (source, lexeme, columnNumber, lineNumber)
     | isDigit nextChar
         = digitFSA (source, lexeme, columnNumber, lineNumber)
-    | nextChar == '\'' || nextChar == '"'
+    | nextChar == '\''
         = stringFSA (source, lexeme, columnNumber, lineNumber)
     | nextChar == ':'
         = colonFSA (source, lexeme, columnNumber, lineNumber)
