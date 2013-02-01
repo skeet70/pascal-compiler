@@ -21,14 +21,16 @@ import TokenTable
 main = driver `catch` inputError
 
 driver :: IO ()
-driver = do (filename:_) <- getArgs
-            if ((dropWhile (/= '.') filename) == ".mp")
-            then extractData (getToken (read filename, lexeme, column, line))
-            else putStrLn "Please insert a valid file."
-              where
-                lexeme = ""
-                column = 0
-                line = 0
+driver = do
+    (filename:_) <- getArgs
+    source <- readFile filename
+    if ((dropWhile (/= '.') filename) == ".mp")
+    then extractData (getToken (source, lexeme, column, line))
+    else putStrLn "Please insert a valid file."
+      where
+        lexeme = ""
+        column = 0
+        line = 0
 
 extractData :: (String, String, Token, Int, Int) -> IO ()
 extractData (source, lexeme, token, column, line) = do
