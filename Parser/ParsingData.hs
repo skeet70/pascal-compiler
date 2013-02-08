@@ -1,4 +1,4 @@
-data ParsingData = ParsingData { tokenValue :: String
+data ParsingData = ParsingData { lookAheadToken :: Token
                                 --stuff :: Int
                                 --otherStuff :: Token
                                 --exampleStuff :: Bool
