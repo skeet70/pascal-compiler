@@ -1,0 +1,49 @@
+Statement           ⟶ EmptyStatement
+                    ⟶ CompoundStatement
+                    ⟶ ReadStatement
+                    ⟶ WriteStatement
+                    ⟶ AssignmentStatement
+                    ⟶ IfStatement
+                    ⟶ WhileStatement
+                    ⟶ RepeatStatement
+                    ⟶ ForStatement
+                    ⟶ ProcedureStatement              
+EmptyStatement      ⟶ ε
+ReadStatement       ⟶ "read" "(" ReadParameter ReadParameterTail ")"
+
+ReadParameterTail   ⟶ "," ReadParameter ReadParameterTail
+                    ⟶ ε
+
+ReadParameter       ⟶ VariableIdentifier              
+WriteStatement      ⟶ "write" "(" WriteParameter WriteParameterTail ")"
+
+WriteParameterTail  ⟶ "," WriteParameter
+                    ⟶ ε
+
+WriteParameter      ⟶ OrdinalExpression              
+AssignmentStatement ⟶ VariableIdentifier ":=" Expression
+                    ⟶ FunctionIdentifier ":=" Expression              
+IfStatement         ⟶ "if" BooleanExpression "then" Statement OptionalElsePart
+
+OptionalElsePart    ⟶ "else" Statement
+                    ⟶ ε              
+RepeatStatement     ⟶ "repeat" StatementSequence "until" BooleanExpression              
+WhileStatement      ⟶ "while" BooleanExpression "do" Statement              
+ForStatement        ⟶ "for" ControlVariable ":=" InitialValue StepValue FinalValue "do" Statement
+
+ControlVariable     ⟶ VariableIdentifier
+
+InitialValue        ⟶ OrdinalExpression
+
+StepValue           ⟶ "to"
+                    ⟶ "downto"
+
+FinalValue          ⟶ OrdinalExpression              
+ProcedureStatement  ⟶ ProcedureIdentifier OptionalActualParameterList
+
+OptionalActualParameterList ⟶ "(" ActualParameter ActualParameterTail ")"
+                            ⟶ ε
+
+ActualParameterTail ⟶ "," ActualParameter ActualParameterTail
+                    ⟶ ε
+ActualParameter     ⟶ OrdinalExpression
