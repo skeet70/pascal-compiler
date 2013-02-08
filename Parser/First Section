@@ -1,0 +1,42 @@
+
+SystemGoal      ⟶ Program eof              
+Program         ⟶ ProgramHeading ";" Block "."
+
+ProgramHeading  ⟶ "program" ProgramIdentifier
+
+Block           ⟶ VariableDeclarationPart ProcedureAndFunctionDeclarationPart StatementPart
+VariableDeclarationPart  ⟶ "var" VariableDeclaration ";" VariableDeclarationTail
+
+VariableDeclarationTail  ⟶ VariableDeclaration ";" VariableDeclarationTail 
+                         ⟶ ε
+VariableDeclaration      ⟶ Identifierlist ":" Type 
+Type                     ⟶ "Integer"
+                         ⟶ "Float"
+                         ⟶ "Boolean"
+ProcedureAndFunctionDeclarationPart ⟶ ProcedureDeclaration ProcedureAndFunctionDeclarationPart
+                                    ⟶ FunctionDeclaration ProcedureAndFunctionDeclarationPart
+                                    ⟶ ε
+ProcedureDeclaration                ⟶ ProcedureHeading ";" Block ";"
+
+FunctionDeclaration                 ⟶ FunctionHeading ";" Block ";"              
+ProcedureHeading                    ⟶ "procedure" procedureIdentifier OptionalFormalParameterList
+
+FunctionHeading                     ⟶ "function" functionIdentifier OptionalFormalParameterList ":" Type
+
+OptionalFormalParameterList         ⟶ "(" FormalParameterSection FormalParameterSectionTail ")"
+                                    ⟶ ε
+FormalParameterSectionTail          ⟶ ";" FormalParameterSection FormalParameterSectionTail
+                                    ⟶ ε
+
+FormalParameterSection              ⟶ ValueParameterSection
+                                    ⟶ VariableParameterSection              
+ValueParameterSection               ⟶ IdentifierList ":" Type
+
+VariableParameterSection            ⟶ "var" IdentifierList ":" Type
+StatementPart      ⟶ CompoundStatement              
+CompoundStatement  ⟶ "begin" StatementSequence "end"
+
+StatementSequence  ⟶ Statement StatementTail
+
+StatementTail      ⟶ ";" Statement StatementTail
+                   ⟶ ε
