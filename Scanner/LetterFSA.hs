@@ -23,7 +23,7 @@ identifierFSA (source, lexeme, colNum, lineNum)
     | (head source) == '_' && (tail source) /= [] && isAlphaNum (head (tail source))
         = identifierFSA(tail source, lexeme ++ [head source], colNum+1, lineNum)
     | (head source) == '_' && (tail source) /= [] && not (isAlphaNum (head (tail source)))
-        = (tail source, lexeme ++ [head source], IdentifierOrLiteral MP_IDENTIFIER, colNum, lineNum)
+        = (tail source, lexeme ++ [head source], ErrorCode MP_ERROR, colNum, lineNum)
     | otherwise
         = (source, lexeme, IdentifierOrLiteral MP_IDENTIFIER, colNum, lineNum)
 
