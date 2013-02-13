@@ -45,6 +45,10 @@ simpleExpression :: ParsingData -> ParsingData
 simpleExpression parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) (MP_PLUS, MP_MINUS)
         = termTail (term (optionalSign parsingData))
+    | getTokenType (lookAheadToken parsingData) ==  IdentifierOrLiteral
+        = termTail (term (optionalSign parsingData))
+    | getTokenType lookAheadToken parsingData ==  ReservedWord
+        = termTail (term (optionalSign parsingData))
     | lookAheadToken parsingData == lambda
         = -- handle lambda
     | otherwise
