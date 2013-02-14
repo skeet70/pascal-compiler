@@ -192,3 +192,41 @@ finalValue parsingData
         = ordinalExpression parsingData
     | otherwise
         = --handle error
+
+--ProcedureStatement ⟶ ProcedureIdentifier OptionalActualParameterList
+procedureStatement :: ParsingData -> ParsingData
+procedureStatement parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
+        = optionalActualParameterList (procedureIdentifier parsingData)
+    | otherwise
+        = --handle error
+
+--OptionalActualParameterList ⟶ "(" ActualParameter ActualParameterTail ")"
+--                            ⟶ ε
+optionalActualParameterList :: ParsingData -> ParsingData
+optionalActualParameterList parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN"
+        = terminal (actualParameterTail (actualParameter (terminal parsingData)))
+    | (lookAheadToken parsingData) == lambda
+        = --handle lambda
+    | otherwise
+        = --handle error
+
+--ActualParameterTail ⟶ "," ActualParameter ActualParameterTail
+--                    ⟶ ε
+actualParameterTail :: ParsingData -> ParsingData
+actualParameterTail parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_COMMA"
+        = actualParameterTail (actualParameter (terminal parsingData))
+    | (lookAheadToken parsingData) == lambda
+        = --handle lambda
+    | otherwise
+        = --handle error
+
+--ActualParameter ⟶ OrdinalExpression
+actualParameter :: ParsingData -> ParsingData
+actualParameter parsingData
+    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS"] || (lookAheadToken parsingData) == lambda
+        = ordinalExpression parsingData
+    | otherwise
+        = --handle error
