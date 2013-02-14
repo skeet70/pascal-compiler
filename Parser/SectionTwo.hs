@@ -77,3 +77,49 @@ readParameter parsingData
         = variableIdentifier parsingData
     | otherwise
         = --handle error
+
+--WriteStatement ⟶ "write" "(" WriteParameter WriteParameterTail ")"
+writeStatement :: ParsingData -> ParsingData
+writeStatement parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_WRITE"
+        = terminal (writeParameterTail (writeParameter (terminal (terminal parsingData))))
+    | otherwise
+        = --handle error
+
+--WriteParameterTail  ⟶ "," WriteParameter
+--                    ⟶ ε
+writeParameterTail :: ParsingData -> ParsingData
+writeParameterTail parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_COMMA"
+        = writeParameter (terminal parsingData)
+    | (lookAheadToken parsingData) == lambda
+        = --handle lambda
+    | otherwise
+        = --handle error
+
+--WriteParameter ⟶ OrdinalExpression
+writeParameter :: ParsingData -> ParsingData
+writeParameter parsingData
+    | any (== unwrapToken (lookAheadToken parsingData)) ["MP_PLUS", "MP_MINUS"] || (lookAheadToken parsingData) == lambda
+        = ordinalExpression parsingData
+    | otherwise
+        = --handle error
+
+--AssignmentStatement ⟶ VariableIdentifier ":=" Expression
+--                    ⟶ FunctionIdentifier ":=" Expression 
+assignmentStatement :: ParsingData -> ParsingData
+assignmentStatement parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
+        = expression (terminal (variableIdentifier parsingData))
+    | getTokenType (lookAheadToken parsingData) == "ReservedWord"
+        = expression (terminal (functionIdentifier parsingData))  --Just for now, need to get clarification from Rocky
+    | otherwise
+        = --handle error
+
+--IfStatement ⟶ "if" BooleanExpression "then" Statement OptionalElsePart
+ifStatement :: ParsingData -> ParsingData
+ifStatement parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_IF"
+        = optionalElsePart (statment (terminal (booleanExpression (terminal parsingData))))
+    | otherwise
+        = --handle error
