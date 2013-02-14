@@ -123,3 +123,72 @@ ifStatement parsingData
         = optionalElsePart (statment (terminal (booleanExpression (terminal parsingData))))
     | otherwise
         = --handle error
+
+--OptionalElsePart ⟶ "else" Statement
+--                 ⟶ ε  
+optionalElsePart :: ParsingData -> ParsingData
+optionalElsePart parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_ELSE"
+        = statement (terminal parsingData)
+    | (lookAheadToken parsingData) == lambda
+        = --handle lambda
+    |otherwise
+        = --handle error
+
+--RepeatStatement ⟶ "repeat" StatementSequence "until" BooleanExpression  
+repeatStatement :: ParsingData -> ParsingData
+repeatStatement parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_REPEAT"
+        = booleanExpression (terminal (statementSequence (terminal parsingData)))
+    | otherwise
+        = --handle error
+
+--WhileStatement ⟶ "while" BooleanExpression "do" Statement  
+whileStatement :: ParsingData -> ParsingData
+whileStatement parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_WHILE"
+        = statement (terminal (booleanExpression (terminal parsingData)))
+    | otherwise
+        = --handle error
+
+--ForStatement ⟶ "for" ControlVariable ":=" InitialValue StepValue FinalValue "do" Statement
+forStatement :: ParsingData -> ParsingData
+forStatement parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_FOR"
+        = statement (terminal (finalValue (stepValue (initialValue (terminal (controlVariable (terminal parsingData)))))))
+    | otherwise
+        = --handle error
+
+--ControlVariable ⟶ VariableIdentifier
+controlVariable :: ParsingData -> ParsingData
+controlVariable parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
+        = variableIdentifier parsingData
+    | otherwise
+        = --handle error
+
+--InitialValue ⟶ OrdinalExpression
+initialValue :: ParsingData -> ParsingData
+initialValue parsingData
+    | any (== unwrapToken (lookAheadToken parsingData)) ["MP_PLUS", "MP_MINUS"] || (lookAheadToken parsingData) == lambda
+        = ordinalExpression parsingData
+    | otherwise
+        = --handle error
+
+--StepValue ⟶ "to"
+--          ⟶ "downto"
+stepValue :: ParsingData -> ParsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_TO"
+        = terminal parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_DOWNTO"
+        = terminal parsingData
+    | otherwise
+        = --handle error
+
+--FinalValue ⟶ OrdinalExpression
+finalValue :: ParsingData -> ParsingData
+finalValue parsingData
+    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS"] || (lookAheadToken parsingData) == lambda
+        = ordinalExpression parsingData
+    | otherwise
+        = --handle error
