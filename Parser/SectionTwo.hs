@@ -6,6 +6,7 @@
 -- during recursion indicates the syntax of the program was invalid.
 --
 -- TODO: Error handling, empty string/lambda, and terminal handling.
+module Parser.SectionTwo where
 
 import Parser.ParsingData
 import Scanner.TokenType
