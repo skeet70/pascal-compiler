@@ -15,7 +15,7 @@ import Parser.ParsingData
 import Parser.Helper
 import Scanner.TokenType
 
-
+-- SystemGoal ⟶ Program eof
 systemGoal :: ParsingData -> ParsingData
 systemGoal parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_EOF"
@@ -23,20 +23,23 @@ systemGoal parsingData
     | otherwise
         = program parsingData
 
+-- Program ⟶ ProgramHeading ";" Block "."
 program :: ParsingData -> ParsingData
 program parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_PROGRAM" 
-        = terminal (block (terminal (programHeading parsingData)))
+    | unwrapToken (lookAheadToken parsingData) == "MP_PROGRAM"
+        = period_match (block (semic_match (programHeading parsingData)))
     | otherwise
         = syntaxError parsingData
 
+-- ProgramHeading ⟶ "program" ProgramIdentifier
 programHeading :: ParsingData -> ParsingData
 programHeading parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROGRAM"
-        = programIdentifier (terminal parsingData)
+        = programIdentifier (match parsingData)
     | otherwise
         = syntaxError parsingData
 
+-- Block ⟶ VariableDeclarationPart ProcedureAndFunctionDeclarationPart StatementPart
 block :: ParsingData -> ParsingData
 block parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
@@ -44,116 +47,131 @@ block parsingData
     | otherwise
         = syntaxError parsingData
 
+-- VariableDeclarationPart ⟶ "var" VariableDeclaration ";" VariableDeclarationTail
 variableDeclarationPart :: ParsingData -> ParsingData
 variableDeclarationPart parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
-        = variableDeclarationTail ( terminal ( variableDeclaration ( terminal parsingData)))
+        = variableDeclarationTail ( semic_match ( variableDeclaration ( match parsingData)))
     | otherwise
         = syntaxError parsingData
 
+-- VariableDeclarationTail ⟶ VariableDeclaration ";" VariableDeclarationTail
+--                         ⟶ ε
 variableDeclarationTail :: ParsingData -> ParsingData
 variableDeclarationTail parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = variableDeclarationTail ( terminal ( variableDeclaration parsingData))
-    | lookAheadToken parsingData == lambda
-        = parsingData
+        = variableDeclarationTail ( semic_match ( variableDeclaration parsingData))
     | otherwise
-        = syntaxError parsingData
+        = parsingData
 
+-- VariableDeclaration ⟶ Identifierlist ":" Type
 variableDeclaration :: ParsingData -> ParsingData
 variableDeclaration parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = typeParser ( terminal ( identifierList parsingData))
+        = typeParser ( colon_match ( identifierList parsingData))
     | otherwise
         = syntaxError parsingData
 
+-- Type ⟶ "Integer"
+--      ⟶ "Float"
+--      ⟶ "Boolean"
 typeParser :: ParsingData -> ParsingData
 typeParser parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN"] 
-        = terminal parsingData
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN"]
+        = match parsingData
     | otherwise
         = syntaxError parsingData
 
+-- ProcedureAndFunctionDeclarationPart ⟶ ProcedureDeclaration ProcedureAndFunctionDeclarationPart
+--                                     ⟶ FunctionDeclaration ProcedureAndFunctionDeclarationPart
+--                                     ⟶ ε
 procedureAndFunctionDeclarationPart :: ParsingData -> ParsingData
 procedureAndFunctionDeclarationPart parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROCEDURE"
         = procedureAndFunctionDeclarationPart ( procedureDeclaration parsingData)
-    | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION" 
+    | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
         = procedureAndFunctionDeclarationPart ( functionDeclaration parsingData)
-    | unwrapToken (lookAheadToken parsingData) == lambda
-        = parsingData
     | otherwise
-        = syntaxError parsingData
+        = parsingData
 
+-- ProcedureDeclaration ⟶ ProcedureHeading ";" Block ";"
 procedureDeclaration :: ParsingData -> ParsingData
 procedureDeclaration parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROCEDURE"
-        = terminal ( block ( terminal ( procedureHeading parsingData)))
+        = semic_match ( block ( semic_match ( procedureHeading parsingData)))
     | otherwise
         = syntaxError parsingData
 
+-- FunctionDeclaration ⟶ FunctionHeading ";" Block ";"
 functionDeclaration :: ParsingData -> ParsingData
 functionDeclaration parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
-        = terminal ( block ( terminal ( functionHeading parsingData)))
+        = semic_match ( block ( semic_match ( functionHeading parsingData)))
     | otherwise
         = syntaxError parsingData
 
+-- ProcedureHeading ⟶ "procedure" procedureIdentifier OptionalFormalParameterList
 procedureHeading :: ParsingData -> ParsingData
 procedureHeading parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROCEDURE"
-        = optionalFormalParameterList ( procedureIdentifier ( terminal parsingData))
+        = optionalFormalParameterList ( procedureIdentifier ( match parsingData))
     | otherwise
         = syntaxError parsingData
 
+-- FunctionHeading ⟶ "function" functionIdentifier OptionalFormalParameterList ":" Type
 functionHeading :: ParsingData -> ParsingData
 functionHeading parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
-        = typeParser ( terminal ( optionalFormalParameterList ( functionIdentifier ( terminal parsingData))))
+        = typeParser ( colon_match ( optionalFormalParameterList ( functionIdentifier ( match parsingData))))
     | otherwise
         = syntaxError parsingData
 
+-- OptionalFormalParameterList ⟶ "(" FormalParameterSection FormalParameterSectionTail ")"
+--                             ⟶ ε
 optionalFormalParameterList :: ParsingData -> ParsingData
 optionalFormalParameterList parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN" 
-        = terminal ( formalParameterSectionTail ( formalParameterSection ( terminal parsingData)))
-    | unwrapToken (lookAheadToken parsingData) == lambda
-        = parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN"
+        = r_paren_match ( formalParameterSectionTail ( formalParameterSection ( match parsingData)))
     | otherwise
-        = syntaxError parsingData
+        = parsingData
 
+-- FormalParameterSectionTail ⟶ ";" FormalParameterSection FormalParameterSectionTail
+--                            ⟶ ε
 formalParameterSectionTail :: ParsingData -> ParsingData
 formalParameterSectionTail parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_SCOLON" 
-        = formalParameterSectionTail ( formalParameterSection ( terminal parsingData))
-    | unwrapToken (lookAheadToken parsingData) == lambda 
-        = parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_SCOLON"
+        = formalParameterSectionTail ( formalParameterSection ( match parsingData))
     | otherwise
-        = syntaxError parsingData
+        = parsingData
 
+-- FormalParameterSection ⟶ ValueParameterSection
+--                        ⟶ VariableParameterSection
 formalParameterSection :: ParsingData -> ParsingData
 formalParameterSection parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"  
+    | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = valueParameterSection parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_VAR"  
+    | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
         = variableParameterSection
     | otherwise
         = syntaxError parsingData
 
+-- ValueParameterSection ⟶ IdentifierList ":" Type
 valueParameterSection :: ParsingData -> ParsingData
 valueParameterSection parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"   
-        = typeParser ( terminal ( identifierList parsingData))
+    | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
+        = typeParser ( colon_match ( identifierList parsingData))
     | otherwise
         = syntaxError parsingData
 
+-- VariableParameterSection ⟶ "var" IdentifierList ":" Type
 variableParameterSection :: ParsingData -> ParsingData
 variableParameterSection parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_VAR"   
-        = typeParser ( terminal ( identifierList ( terminal parsingData)))
+    | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
+        = typeParser ( colon_match ( identifierList ( match parsingData)))
     | otherwise
         = syntaxError parsingData
 
+-- StatementPart ⟶ CompoundStatement
 statementPart :: ParsingData -> ParsingData
 statementPart parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
@@ -161,13 +179,15 @@ statementPart parsingData
     | otherwise
         = syntaxError parsingData
 
+-- CompoundStatement ⟶ "begin" StatementSequence "end"
 compoundStatement :: ParsingData -> ParsingData
 compoundStatement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
-        = terminal ( statementSequence ( terminal parsingData))
+        = end_match ( statementSequence ( match parsingData))
     | otherwise
         = syntaxError parsingData
 
+-- StatementSequence ⟶ Statement StatementTail
 statementSequence :: ParsingData -> ParsingData
 statementSequence parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_BEGIN", "MP_READ", "MP_WRITE", "MP_IDENTIFIER", "MP_IF", "MP_WHILE", "MP_REPEAT", "MP_FOR"]
@@ -175,13 +195,13 @@ statementSequence parsingData
     | otherwise
         = syntaxError parsingData
 
+-- StatementTail ⟶ ";" Statement StatementTail
+--               ⟶ ε
 statementTail :: ParsingData -> ParsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_SCOLON"
-        = statementTail ( statement ( terminal parsingData))
-    | unwrapToken (lookAheadToken parsingData) == lambda
-        = parsingData
+        = statementTail ( statement ( match parsingData))
     | otherwise
-        = syntaxError parsingData
+        = parsingData
 
 -- Author: Murph Murphy
 -- Date: 2/12/2013
@@ -197,11 +217,8 @@ statementTail :: ParsingData -> ParsingData
 -- it calls the syntaxError helper function. Each function checks if an error
 -- already has occured, and if it has, doesn't try to evaluate it's rule,
 -- functionally breaking recursion there.
---
--- TODO: terminal handling.
 
-
--- Handles a base Expression non-terminal.
+-- Expression              ⟶ SimpleExpression OptionalRelationalPart
 expression :: ParsingData -> ParsingData
 expression parsingData
     | hasFailed parsingData == True
@@ -213,9 +230,10 @@ expression parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
         = optionalRelationalPart (simpleExpression parsingData)
     | otherwise
-        = syntaxError (parsingData)
+        = syntaxError parsingData
 
--- Handles the OptionalRelationalPart non-terminal.
+-- OptionalRelationalPart  ⟶ RelationalOperator SimpleExpression
+--                         ⟶ ε
 optionalRelationalPart :: ParsingData -> ParsingData
 optionalRelationalPart parsingData
     | hasFailed parsingData == True
@@ -225,17 +243,22 @@ optionalRelationalPart parsingData
     | otherwise
         = parsingData -- empty string allowed
 
--- Handles the RelationalOperator terminal.
+-- RelationalOperator      ⟶ "="
+--                         ⟶ "<"
+--                         ⟶ ">"
+--                         ⟶ "<="
+--                         ⟶ ">="
+--                         ⟶ "<>"
 relationalOperator :: ParsingData -> ParsingData
 relationalOperator parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_EQUALS", "MP_LTHAN", "MP_GTHAN", "MP_LEQUAL", "MP_GEQUAL", "MP_NEQUAL"]
-        = terminal parsingData
+        = match parsingData
     | otherwise
-        = syntaxError (parsingData)
+        = syntaxError parsingData
 
--- Handles the SimpleExpression non-terminal.
+-- SimpleExpression        ⟶ OptionalSign Term TermTail
 simpleExpression :: ParsingData -> ParsingData
 simpleExpression parsingData
     | hasFailed parsingData == True
@@ -249,7 +272,8 @@ simpleExpression parsingData
     | otherwise
         = parsingData -- empty string allowed
 
--- Handles the TermTail non-terminal.
+-- TermTail                ⟶ AddingOperator Term TermTail
+--                         ⟶ ε
 termTail :: ParsingData -> ParsingData
 termTail parsingData
     | hasFailed parsingData == True
@@ -259,26 +283,31 @@ termTail parsingData
     | otherwise
         = parsingData -- empty string allowed
 
--- Handles the OptionalSign terminal.
+-- OptionalSign            ⟶ "+"
+--                         ⟶ "-"
+--                         ⟶ ε
 optionalSign :: ParsingData -> ParsingData
 optionalSign parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS"]
-        = terminal parsingData
+        = match parsingData
     | otherwise
         = parsingData --empty string allowed
 
--- Handles the AddingOperator terminal.
+-- AddingOperator          ⟶ "+"
+--                         ⟶ "-"
+--                         ⟶ "or"
 addingOperator :: ParsingData -> ParsingData
 addingOperator parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_OR"]
-        = terminal parsingData
+        = match parsingData
     | otherwise
-        = syntaxError (parsingData)
+        = syntaxError parsingData
 
+-- Term                    ⟶ Factor FactorTail
 term :: ParsingData -> ParsingData
 term parsingData
     | hasFailed parsingData == True
@@ -290,9 +319,10 @@ term parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_NOT", "MP_LPAREN"]
         = factorTail (factor parsingData)
     | otherwise
-        = syntaxError (parsingData)
+        = syntaxError parsingData
 
--- Handles the FactorTail non-terminal.
+-- FactorTail              ⟶ MultiplyingOperator Factor FactorTail
+--                         ⟶ ε
 factorTail :: ParsingData -> ParsingData
 factorTail parsingData
     | hasFailed parsingData == True
@@ -302,17 +332,24 @@ factorTail parsingData
     | otherwise
         = parsingData -- empty string allowed
 
--- Handels the multiplyingOperator terminal.
+-- MultiplyingOperator     ⟶ "*"
+--                         ⟶ "div"
+--                         ⟶ "mod"
+--                         ⟶ "and"
 multiplyingOperator :: ParsingData -> ParsingData
 multiplyingOperator parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_TIMES", "MP_DIV", "MP_MOD", "MP_AND"]
-        = terminal parsingData
+        = match parsingData
     | otherwise
-        = syntaxError (parsingData)
+        = syntaxError parsingData
 
--- Handles the Factor grammar rule.
+-- Factor                  ⟶ UnsignedInteger
+--                         ⟶ VariableIdentifier
+--                         ⟶ "not" Factor
+--                         ⟶ "(" Expression ")"
+--                         ⟶ FunctionIdentifier OptionalActualParameterList
 factor :: ParsingData -> ParsingData
 factor parsingData
     | hasFailed parsingData == True
@@ -322,55 +359,55 @@ factor parsingData
     | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
         = optionalActualParemeterList (functionIdentifier parsingData)
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT", "MP_FIXED_LIT", "MP_FLOAT_LIT"]
-        = terminal parsingData
+        = match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_NOT"
-        = factor (terminal parsingData)
+        = factor (match parsingData)
     | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN"
-        = terminal (expression (terminal parsingData))
+        = r_paren_match (expression (match parsingData))
     | otherwise
-        = syntaxError (parsingData)
+        = syntaxError parsingData
 
--- Handles the ProgramIdentifier terminal.
+-- ProgramIdentifier       ⟶ Identifier
 programIdentifier :: ParsingData -> ParsingData
 programIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_IDENTIFIER", "MP_STRING_LIT"]
-        = identifier parsingData
+        = match parsingData
     | otherwise
-        = syntaxError (parsingData)
+        = syntaxError parsingData
 
--- Handles the VariableIdentifier terminal.
+-- VariableIdentifier      ⟶ Identifier
 variableIdentifier :: ParsingData -> ParsingData
 variableIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_IDENTIFIER", "MP_STRING_LIT"]
-        = identifier parsingData
+        = match parsingData
     | otherwise
-        = syntaxError (parsingData)
+        = syntaxError parsingData
 
--- Handles the ProcedureIdentifier terminal.
+-- ProcedureIdentifier     ⟶ Identifier
 procedureIdentifier :: ParsingData -> ParsingData
 procedureIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_IDENTIFIER", "MP_STRING_LIT"]
-        = identifier parsingData
+        = match parsingData
     | otherwise
-        = syntaxError (parsingData)
+        = syntaxError parsingData
 
--- Handles the FunctionIdentifier terminal.
+-- FunctionIdentifier      ⟶ Identifier
 functionIdentifier :: ParsingData -> ParsingData
 functionIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
     | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
-        = identifier parsingData
+        = match parsingData
     | otherwise
-        = syntaxError (parsingData)
+        = syntaxError parsingData
 
--- Handles the BooleanExpression non-terminal.
+-- BooleanExpression       ⟶ Expression
 booleanExpression :: ParsingData -> ParsingData
 booleanExpression parsingData
     | hasFailed parsingData == True
@@ -382,8 +419,9 @@ booleanExpression parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
         = expression parsingData
     | otherwise
-        = syntaxError (parsingData)
+        = syntaxError parsingData
 
+-- OrdinalExpression       ⟶ Expression
 ordinalExpression :: ParsingData -> ParsingData
 ordinalExpression parsingData
     | hasFailed parsingData == True
@@ -395,23 +433,26 @@ ordinalExpression parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
         = expression parsingData
     | otherwise
-        = syntaxError (parsingData)
+        = syntaxError parsingData
 
+-- IdentifierList          ⟶ Identifier IdentifierTail
 identifierList :: ParsingData -> ParsingData
 identifierList parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_IDENTIFIER", "MP_STRING_LIT"]
-        = identifierList (terminal identifier)
+        = identifierList (match parsingData)
     | otherwise
-        = syntaxError (parsingData)
+        = syntaxError parsingData
 
+-- IdentifierTail          ⟶ "," Identifier IdentifierTail
+--                         ⟶ ε
 identifierTail :: ParsingData -> ParsingData
 identifierTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_COMMA"
-        = identifierTail (identifier (terminal parsingData))
+        = identifierTail (identifier (match parsingData))
     | otherwise
         = parsingData -- empty string allowed
 
@@ -477,7 +518,7 @@ readStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_READ"
-        = terminal (readParameterTail (readParameter (terminal (terminal parsingData))))
+        = r_paren_match (readParameterTail (readParameter (l_paren_match (match parsingData))))
     | otherwise
         = syntaxError parsingData
 
@@ -488,7 +529,7 @@ readParameterTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_COMMA"
-        = readParameterTail (readParameter (terminal parsingData))
+        = readParameterTail (readParameter (match parsingData))
     | (lookAheadToken parsingData) == lambda
         = parsingData
     | otherwise
@@ -510,7 +551,7 @@ writeStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_WRITE"
-        = terminal (writeParameterTail (writeParameter (terminal (terminal parsingData))))
+        = r_paren_match (writeParameterTail (writeParameter (l_paren_match (match parsingData))))
     | otherwise
         = syntaxError parsingData
 
@@ -521,7 +562,7 @@ writeParameterTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_COMMA"
-        = writeParameter (terminal parsingData)
+        = writeParameter (match parsingData)
     | (lookAheadToken parsingData) == lambda
         = parsingData
     | otherwise
@@ -538,15 +579,15 @@ writeParameter parsingData
         = syntaxError parsingData
 
 --AssignmentStatement ⟶ VariableIdentifier ":=" Expression
---                    ⟶ FunctionIdentifier ":=" Expression 
+--                    ⟶ FunctionIdentifier ":=" Expression
 assignmentStatement :: ParsingData -> ParsingData
 assignmentStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = expression (terminal (variableIdentifier parsingData))
+        = expression (assignment_match (variableIdentifier parsingData))
     | getTokenType (lookAheadToken parsingData) == "ReservedWord"
-        = expression (terminal (functionIdentifier parsingData))  --Just for now, need to get clarification from Rocky
+        = expression (assignment_match (functionIdentifier parsingData))  --Just for now, need to get clarification from Rocky
     | otherwise
         = syntaxError parsingData
 
@@ -556,40 +597,40 @@ ifStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IF"
-        = optionalElsePart (statment (terminal (booleanExpression (terminal parsingData))))
+        = optionalElsePart (statment (then_match (booleanExpression (match parsingData))))
     | otherwise
         = syntaxError parsingData
 
 --OptionalElsePart ⟶ "else" Statement
---                 ⟶ ε  
+--                 ⟶ ε
 optionalElsePart :: ParsingData -> ParsingData
 optionalElsePart parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_ELSE"
-        = statement (terminal parsingData)
+        = statement (match parsingData)
     | (lookAheadToken parsingData) == lambda
         = parsingData
     |otherwise
         = syntaxError parsingData
 
---RepeatStatement ⟶ "repeat" StatementSequence "until" BooleanExpression  
+--RepeatStatement ⟶ "repeat" StatementSequence "until" BooleanExpression
 repeatStatement :: ParsingData -> ParsingData
 repeatStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_REPEAT"
-        = booleanExpression (terminal (statementSequence (terminal parsingData)))
+        = booleanExpression (until_match (statementSequence (match parsingData)))
     | otherwise
         = syntaxError parsingData
 
---WhileStatement ⟶ "while" BooleanExpression "do" Statement  
+--WhileStatement ⟶ "while" BooleanExpression "do" Statement
 whileStatement :: ParsingData -> ParsingData
 whileStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_WHILE"
-        = statement (terminal (booleanExpression (terminal parsingData)))
+        = statement (do_match (booleanExpression (match parsingData)))
     | otherwise
         = syntaxError parsingData
 
@@ -599,7 +640,7 @@ forStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FOR"
-        = statement (terminal (finalValue (stepValue (initialValue (terminal (controlVariable (terminal parsingData)))))))
+        = statement (do_match (finalValue (stepValue (initialValue (assignment_match (controlVariable (match parsingData)))))))
     | otherwise
         = syntaxError parsingData
 
@@ -630,9 +671,9 @@ stopValue parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_TO"
-        = terminal parsingData
+        = match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_DOWNTO"
-        = terminal parsingData
+        = match parsingData
     | otherwise
         = syntaxError parsingData
 
@@ -663,7 +704,7 @@ optionalActualParameterList parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN"
-        = terminal (actualParameterTail (actualParameter (terminal parsingData)))
+        = r_paren_match (actualParameterTail (actualParameter (match parsingData)))
     | (lookAheadToken parsingData) == lambda
         = parsingData
     | otherwise
@@ -676,7 +717,7 @@ actualParameterTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_COMMA"
-        = actualParameterTail (actualParameter (terminal parsingData))
+        = actualParameterTail (actualParameter (match parsingData))
     | (lookAheadToken parsingData) == lambda
         = parsingData
     | otherwise
