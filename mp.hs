@@ -12,6 +12,7 @@
 
 import Scanner.Dispatcher
 import Scanner.TokenTable
+import Parser.ParsingData
 
 import System.Environment
 import System.IO
@@ -26,12 +27,22 @@ driver = do
     (filename:_) <- getArgs
     source <- readFile filename
     if ((dropWhile (/= '.') filename) == ".mp")
-    then extractData $ getToken (source, lexeme, column, line)
+    then packData $ getToken (source, lexeme, column, line)
     else putStrLn "Please insert a valid file."
       where
         lexeme = ""
         column = 1
         line = 1
+
+
+packData :: (String, String, Token, Int, Int) -> ParsingData
+packData (source, lexeme, token, column, line) =
+    ParsingData { lookAheadToken=token
+                , hasFailed=False
+                , line=line
+                , column=column
+                , input=[]
+                }
 
 extractData :: (String, String, Token, Int, Int) -> IO ()
 extractData (source, lexeme, token, column, line) = do
