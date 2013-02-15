@@ -2,6 +2,7 @@
 --
 --Authored by: Tyler J. Huffman
 
+
 systemGoal :: ParsingData -> ParsingData
 systemGoal parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_EOF"
