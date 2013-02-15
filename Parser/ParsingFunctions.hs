@@ -346,7 +346,6 @@ multiplyingOperator parsingData
         = syntaxError parsingData
 
 -- Factor                  ⟶ UnsignedInteger
---                         ⟶ VariableIdentifier
 --                         ⟶ "not" Factor
 --                         ⟶ "(" Expression ")"
 --                         ⟶ FunctionIdentifier OptionalActualParameterList
@@ -354,9 +353,7 @@ factor :: ParsingData -> ParsingData
 factor parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_IDENTIFIER", "MP_STRING_LIT"]
-        = variableIdentifier parsingData
-    | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
+    | unwrapToken (lookAheadToken parsingData) ==  "MP_IDENTIFIER"
         = optionalActualParemeterList (functionIdentifier parsingData)
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT", "MP_FIXED_LIT", "MP_FLOAT_LIT"]
         = match parsingData
@@ -372,17 +369,7 @@ programIdentifier :: ParsingData -> ParsingData
 programIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_IDENTIFIER", "MP_STRING_LIT"]
-        = match parsingData
-    | otherwise
-        = syntaxError parsingData
-
--- VariableIdentifier      ⟶ Identifier
-variableIdentifier :: ParsingData -> ParsingData
-variableIdentifier parsingData
-    | hasFailed parsingData == True
-        = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_IDENTIFIER", "MP_STRING_LIT"]
+    | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = match parsingData
     | otherwise
         = syntaxError parsingData
@@ -392,7 +379,7 @@ procedureIdentifier :: ParsingData -> ParsingData
 procedureIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_IDENTIFIER", "MP_STRING_LIT"]
+    | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = match parsingData
     | otherwise
         = syntaxError parsingData
@@ -402,7 +389,7 @@ functionIdentifier :: ParsingData -> ParsingData
 functionIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
-    | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
+    | unwrapToken (lookAheadToken parsingData) ==  "MP_IDENTIFIER"
         = match parsingData
     | otherwise
         = syntaxError parsingData
@@ -440,7 +427,7 @@ identifierList :: ParsingData -> ParsingData
 identifierList parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_IDENTIFIER", "MP_STRING_LIT"]
+    | unwrapToken (lookAheadToken parsingData) =="MP_IDENTIFIER"
         = identifierList (match parsingData)
     | otherwise
         = syntaxError parsingData
@@ -480,8 +467,6 @@ statement :: ParsingData -> ParsingData
 statement parsingData
     | hasFailed parsingData == True
         = parsingData
-    | (lookAheadToken parsingData) == lambda
-        = emptyStatement parsingData
     | unwrapToken ((lookAheadToken parsingData)) ==  "MP_BEGIN"
         = compoundStatement parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_READ"
@@ -501,16 +486,14 @@ statement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = procedureStatement parsingData
     | otherwise
-        = syntaxError parsingData
+        = emptyStatement parsingData
 
 emptyStatement :: ParsingData -> ParsingData
 emptyStatement parsingData
     | hasFailed parsingData == True
         = parsingData
-    | (lookAheadToken parsingData) == lambda
-        = parsingData
     | otherwise
-        syntaxError parsingData
+        = parsingData
 
 --ReadStatement ⟶ "read" "(" ReadParameter ReadParameterTail ")"
 readStatement :: ParsingData -> ParsingData
@@ -530,18 +513,16 @@ readParameterTail parsingData
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_COMMA"
         = readParameterTail (readParameter (match parsingData))
-    | (lookAheadToken parsingData) == lambda
-        = parsingData
     | otherwise
-        = syntaxError parsingData
+        = parsingData
 
---ReadParameter ⟶ VariableIdentifier
+--ReadParameter ⟶ FunctionIdentifier
 readParameter :: ParsingData -> ParsingData
 readParameter parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = variableIdentifier parsingData
+        = functionIdentifier parsingData
     | otherwise
         = syntaxError parsingData
 
@@ -563,10 +544,8 @@ writeParameterTail parsingData
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_COMMA"
         = writeParameter (match parsingData)
-    | (lookAheadToken parsingData) == lambda
-        = parsingData
     | otherwise
-        = syntaxError parsingData
+        = parsingData
 
 --WriteParameter ⟶ OrdinalExpression
 writeParameter :: ParsingData -> ParsingData
@@ -578,16 +557,13 @@ writeParameter parsingData
     | otherwise
         = syntaxError parsingData
 
---AssignmentStatement ⟶ VariableIdentifier ":=" Expression
---                    ⟶ FunctionIdentifier ":=" Expression
+--AssignmentStatement ⟶ FunctionIdentifier ":=" Expression
 assignmentStatement :: ParsingData -> ParsingData
 assignmentStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = expression (assignment_match (variableIdentifier parsingData))
-    | getTokenType (lookAheadToken parsingData) == "ReservedWord"
-        = expression (assignment_match (functionIdentifier parsingData))  --Just for now, need to get clarification from Rocky
+        = expression (assignment_match (functionIdentifier parsingData))
     | otherwise
         = syntaxError parsingData
 
@@ -609,10 +585,8 @@ optionalElsePart parsingData
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_ELSE"
         = statement (match parsingData)
-    | (lookAheadToken parsingData) == lambda
-        = parsingData
     |otherwise
-        = syntaxError parsingData
+        = parsingData
 
 --RepeatStatement ⟶ "repeat" StatementSequence "until" BooleanExpression
 repeatStatement :: ParsingData -> ParsingData
@@ -644,13 +618,13 @@ forStatement parsingData
     | otherwise
         = syntaxError parsingData
 
---ControlVariable ⟶ VariableIdentifier
+--ControlVariable ⟶ FunctionIdentifier
 controlVariable :: ParsingData -> ParsingData
 controlVariable parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = variableIdentifier parsingData
+        = functionIdentifier parsingData
     | otherwise
         = syntaxError parsingData
 
@@ -705,10 +679,8 @@ optionalActualParameterList parsingData
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN"
         = r_paren_match (actualParameterTail (actualParameter (match parsingData)))
-    | (lookAheadToken parsingData) == lambda
-        = parsingData
     | otherwise
-        = syntaxError parsingData
+        = parsingData
 
 --ActualParameterTail ⟶ "," ActualParameter ActualParameterTail
 --                    ⟶ ε
@@ -718,10 +690,8 @@ actualParameterTail parsingData
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_COMMA"
         = actualParameterTail (actualParameter (match parsingData))
-    | (lookAheadToken parsingData) == lambda
-        = parsingData
     | otherwise
-        = syntaxError parsingData
+        = parsingData
 
 --ActualParameter ⟶ OrdinalExpression
 actualParameter :: ParsingData -> ParsingData
