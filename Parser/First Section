@@ -1,4 +1,3 @@
-
 SystemGoal      ⟶ Program eof              
 Program         ⟶ ProgramHeading ";" Block "."
 
