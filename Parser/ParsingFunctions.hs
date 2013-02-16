@@ -13,7 +13,7 @@ module Parser.ParsingFunctions where
 
 import Parser.ParsingData
 import Parser.Helper
-import Scanner.TokenType
+import Scanner.TokenTable
 
 -- SystemGoal ⟶ Program eof
 systemGoal :: ParsingData -> ParsingData
@@ -151,7 +151,7 @@ formalParameterSection parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = valueParameterSection parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
-        = variableParameterSection
+        = variableParameterSection parsingData
     | otherwise
         = syntaxError parsingData
 
@@ -198,6 +198,7 @@ statementSequence parsingData
 -- StatementTail ⟶ ";" Statement StatementTail
 --               ⟶ ε
 statementTail :: ParsingData -> ParsingData
+statementTail parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_SCOLON"
         = statementTail ( statement ( match parsingData))
     | otherwise
@@ -354,7 +355,7 @@ factor parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_IDENTIFIER"
-        = optionalActualParemeterList (functionIdentifier parsingData)
+        = optionalActualParameterList (functionIdentifier parsingData)
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT", "MP_FIXED_LIT", "MP_FLOAT_LIT"]
         = match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_NOT"
@@ -439,7 +440,7 @@ identifierTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_COMMA"
-        = identifierTail (identifier (match parsingData))
+        = identifierTail (ident_match (match parsingData))
     | otherwise
         = parsingData -- empty string allowed
 
@@ -552,7 +553,7 @@ writeParameter :: ParsingData -> ParsingData
 writeParameter parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (== unwrapToken (lookAheadToken parsingData)) ["MP_PLUS", "MP_MINUS"] || (lookAheadToken parsingData) == lambda
+    | any (== unwrapToken (lookAheadToken parsingData)) ["MP_PLUS", "MP_MINUS"]
         = ordinalExpression parsingData
     | otherwise
         = syntaxError parsingData
@@ -573,7 +574,7 @@ ifStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IF"
-        = optionalElsePart (statment (then_match (booleanExpression (match parsingData))))
+        = optionalElsePart (statement (then_match (booleanExpression (match parsingData))))
     | otherwise
         = syntaxError parsingData
 
@@ -633,7 +634,7 @@ initialValue :: ParsingData -> ParsingData
 initialValue parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (== unwrapToken (lookAheadToken parsingData)) ["MP_PLUS", "MP_MINUS"] || (lookAheadToken parsingData) == lambda
+    | any (== unwrapToken (lookAheadToken parsingData)) ["MP_PLUS", "MP_MINUS"]
         = ordinalExpression parsingData
     | otherwise
         = syntaxError parsingData
@@ -641,7 +642,7 @@ initialValue parsingData
 --StepValue ⟶ "to"
 --          ⟶ "downto"
 stepValue :: ParsingData -> ParsingData
-stopValue parsingData
+stepValue parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_TO"
@@ -656,7 +657,7 @@ finalValue :: ParsingData -> ParsingData
 finalValue parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS"] || (lookAheadToken parsingData) == lambda
+    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS"]
         = ordinalExpression parsingData
     | otherwise
         = syntaxError parsingData
@@ -698,7 +699,7 @@ actualParameter :: ParsingData -> ParsingData
 actualParameter parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS"] || (lookAheadToken parsingData) == lambda
+    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS"]
         = ordinalExpression parsingData
     | otherwise
         = syntaxError parsingData
