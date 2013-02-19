@@ -2,3 +2,6 @@
 *.o
 DS_Store
 mp
+tags
+test*
+.DS_Store
