@@ -18,7 +18,7 @@ syntaxError parsingData = ParsingData {   lookAheadToken=(lookAheadToken parsing
 -- Generic called whenever a terminal is encountered. Gets the next token from
 -- the input list, as well as the corresponding line_scan and column_scan.
 match :: ParsingData -> ParsingData
-match parsingData = ParsingData {  lookAheadToken=(token (head (input parsingData)))
+match parsingData = ParsingData {     lookAheadToken=(token (head (input parsingData)))
                                     , hasFailed=False
                                     , line=(line_scan (head (input parsingData)))
                                     , column=(column_scan (head (input parsingData)))
@@ -170,6 +170,20 @@ end_match parsingData
 ident_match :: ParsingData -> ParsingData
 ident_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
+        = ParsingData {   lookAheadToken=(token (head (input parsingData)))
+                        , hasFailed=False
+                        , line=(line_scan (head (input parsingData)))
+                        , column=(column_scan (head (input parsingData)))
+                        , input=(tail (input parsingData))
+                    }
+    | otherwise
+        = syntaxError parsingData
+
+-- Specific matching case called for an unkown terminal at the end of a terminal
+-- that should be an end-of-file
+eof_match :: ParsingData -> ParsingData
+eof_match parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_EOF"
         = ParsingData {   lookAheadToken=(token (head (input parsingData)))
                         , hasFailed=False
                         , line=(line_scan (head (input parsingData)))

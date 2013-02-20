@@ -2,7 +2,7 @@
 --
 --Authored by: Tyler J. Huffman, James Sonntag, and Murph "Ryan" Murphy
 
-
+--Edited: Feb. 19, 2013
 
 
 --First section of Parsing Functions
@@ -20,10 +20,10 @@ systemGoal :: ParsingData -> ParsingData
 systemGoal parsingData
     | hasFailed parsingData == True
         = parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_EOF"
-        = parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_PROGRAM"
+        = eof_match (program parsingData)
     | otherwise
-        = program parsingData
+        = syntaxError parsingData
 
 -- Program ⟶ ProgramHeading ";" Block "."
 program :: ParsingData -> ParsingData
