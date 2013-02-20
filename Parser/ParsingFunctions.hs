@@ -18,6 +18,8 @@ import Scanner.TokenTable
 -- SystemGoal ⟶ Program eof
 systemGoal :: ParsingData -> ParsingData
 systemGoal parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_EOF"
         = parsingData
     | otherwise
@@ -26,6 +28,8 @@ systemGoal parsingData
 -- Program ⟶ ProgramHeading ";" Block "."
 program :: ParsingData -> ParsingData
 program parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROGRAM"
         = period_match (block (semic_match (programHeading parsingData)))
     | otherwise
@@ -34,6 +38,8 @@ program parsingData
 -- ProgramHeading ⟶ "program" ProgramIdentifier
 programHeading :: ParsingData -> ParsingData
 programHeading parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROGRAM"
         = programIdentifier (match parsingData)
     | otherwise
@@ -42,6 +48,8 @@ programHeading parsingData
 -- Block ⟶ VariableDeclarationPart ProcedureAndFunctionDeclarationPart StatementPart
 block :: ParsingData -> ParsingData
 block parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
         = statementPart ( procedureAndFunctionDeclarationPart ( variableDeclarationPart parsingData))
     | otherwise
@@ -50,6 +58,8 @@ block parsingData
 -- VariableDeclarationPart ⟶ "var" VariableDeclaration ";" VariableDeclarationTail
 variableDeclarationPart :: ParsingData -> ParsingData
 variableDeclarationPart parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
         = variableDeclarationTail ( semic_match ( variableDeclaration ( match parsingData)))
     | otherwise
@@ -59,6 +69,8 @@ variableDeclarationPart parsingData
 --                         ⟶ ε
 variableDeclarationTail :: ParsingData -> ParsingData
 variableDeclarationTail parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = variableDeclarationTail ( semic_match ( variableDeclaration parsingData))
     | otherwise
@@ -67,6 +79,8 @@ variableDeclarationTail parsingData
 -- VariableDeclaration ⟶ Identifierlist ":" Type
 variableDeclaration :: ParsingData -> ParsingData
 variableDeclaration parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = typeParser ( colon_match ( identifierList parsingData))
     | otherwise
@@ -77,6 +91,8 @@ variableDeclaration parsingData
 --      ⟶ "Boolean"
 typeParser :: ParsingData -> ParsingData
 typeParser parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN"]
         = match parsingData
     | otherwise
@@ -87,6 +103,8 @@ typeParser parsingData
 --                                     ⟶ ε
 procedureAndFunctionDeclarationPart :: ParsingData -> ParsingData
 procedureAndFunctionDeclarationPart parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROCEDURE"
         = procedureAndFunctionDeclarationPart ( procedureDeclaration parsingData)
     | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
@@ -97,6 +115,8 @@ procedureAndFunctionDeclarationPart parsingData
 -- ProcedureDeclaration ⟶ ProcedureHeading ";" Block ";"
 procedureDeclaration :: ParsingData -> ParsingData
 procedureDeclaration parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROCEDURE"
         = semic_match ( block ( semic_match ( procedureHeading parsingData)))
     | otherwise
@@ -105,6 +125,8 @@ procedureDeclaration parsingData
 -- FunctionDeclaration ⟶ FunctionHeading ";" Block ";"
 functionDeclaration :: ParsingData -> ParsingData
 functionDeclaration parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
         = semic_match ( block ( semic_match ( functionHeading parsingData)))
     | otherwise
@@ -113,6 +135,8 @@ functionDeclaration parsingData
 -- ProcedureHeading ⟶ "procedure" procedureIdentifier OptionalFormalParameterList
 procedureHeading :: ParsingData -> ParsingData
 procedureHeading parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROCEDURE"
         = optionalFormalParameterList ( procedureIdentifier ( match parsingData))
     | otherwise
@@ -121,6 +145,8 @@ procedureHeading parsingData
 -- FunctionHeading ⟶ "function" functionIdentifier OptionalFormalParameterList ":" Type
 functionHeading :: ParsingData -> ParsingData
 functionHeading parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
         = typeParser ( colon_match ( optionalFormalParameterList ( functionIdentifier ( match parsingData))))
     | otherwise
@@ -130,6 +156,8 @@ functionHeading parsingData
 --                             ⟶ ε
 optionalFormalParameterList :: ParsingData -> ParsingData
 optionalFormalParameterList parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN"
         = r_paren_match ( formalParameterSectionTail ( formalParameterSection ( match parsingData)))
     | otherwise
@@ -139,6 +167,8 @@ optionalFormalParameterList parsingData
 --                            ⟶ ε
 formalParameterSectionTail :: ParsingData -> ParsingData
 formalParameterSectionTail parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_SCOLON"
         = formalParameterSectionTail ( formalParameterSection ( match parsingData))
     | otherwise
@@ -148,6 +178,8 @@ formalParameterSectionTail parsingData
 --                        ⟶ VariableParameterSection
 formalParameterSection :: ParsingData -> ParsingData
 formalParameterSection parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = valueParameterSection parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
@@ -158,6 +190,8 @@ formalParameterSection parsingData
 -- ValueParameterSection ⟶ IdentifierList ":" Type
 valueParameterSection :: ParsingData -> ParsingData
 valueParameterSection parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = typeParser ( colon_match ( identifierList parsingData))
     | otherwise
@@ -166,6 +200,8 @@ valueParameterSection parsingData
 -- VariableParameterSection ⟶ "var" IdentifierList ":" Type
 variableParameterSection :: ParsingData -> ParsingData
 variableParameterSection parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
         = typeParser ( colon_match ( identifierList ( match parsingData)))
     | otherwise
@@ -174,6 +210,8 @@ variableParameterSection parsingData
 -- StatementPart ⟶ CompoundStatement
 statementPart :: ParsingData -> ParsingData
 statementPart parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
         = compoundStatement parsingData
     | otherwise
@@ -182,6 +220,8 @@ statementPart parsingData
 -- CompoundStatement ⟶ "begin" StatementSequence "end"
 compoundStatement :: ParsingData -> ParsingData
 compoundStatement parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
         = end_match ( statementSequence ( match parsingData))
     | otherwise
@@ -190,6 +230,8 @@ compoundStatement parsingData
 -- StatementSequence ⟶ Statement StatementTail
 statementSequence :: ParsingData -> ParsingData
 statementSequence parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_BEGIN", "MP_READ", "MP_WRITE", "MP_IDENTIFIER", "MP_IF", "MP_WHILE", "MP_REPEAT", "MP_FOR"]
         = statementTail ( statement ( parsingData))
     | otherwise
@@ -199,6 +241,8 @@ statementSequence parsingData
 --               ⟶ ε
 statementTail :: ParsingData -> ParsingData
 statementTail parsingData
+    | hasFailed parsingData == True
+        = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_SCOLON"
         = statementTail ( statement ( match parsingData))
     | otherwise
