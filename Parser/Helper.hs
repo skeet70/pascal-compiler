@@ -4,6 +4,8 @@ import Parser.ParsingData
 import Scanner.TokenTable
 import Scanner.ScannerData
 
+import Debug.Trace
+
 
 -- This is called any time a rule cannot successfully match the current token.
 -- It returns the same ParsingData object with the hasFailed flag tripped.
@@ -18,10 +20,10 @@ syntaxError parsingData = ParsingData {   lookAheadToken=(lookAheadToken parsing
 -- Generic called whenever a terminal is encountered. Gets the next token from
 -- the input list, as well as the corresponding line_scan and column_scan.
 match :: ParsingData -> ParsingData
-match parsingData = ParsingData {     lookAheadToken=(token (head (input parsingData)))
+match parsingData = ParsingData {     lookAheadToken=(token (head(tail(input parsingData))))
                                     , hasFailed=False
-                                    , line=(line_scan (head (input parsingData)))
-                                    , column=(column_scan (head (input parsingData)))
+                                    , line=(line_scan (head(tail(input parsingData))))
+                                    , column=(column_scan (head(tail(input parsingData))))
                                     , input=(tail (input parsingData))
                                 }
 
@@ -30,10 +32,10 @@ match parsingData = ParsingData {     lookAheadToken=(token (head (input parsing
 r_paren_match :: ParsingData -> ParsingData
 r_paren_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_RPAREN"
-        = ParsingData {   lookAheadToken=(token (head (input parsingData)))
+        = ParsingData {   lookAheadToken=(token (head(tail(input parsingData))))
                         , hasFailed=False
-                        , line=(line_scan (head (input parsingData)))
-                        , column=(column_scan (head (input parsingData)))
+                        , line=(line_scan (head(tail(input parsingData))))
+                        , column=(column_scan (head(tail(input parsingData))))
                         , input=(tail (input parsingData))
                     }
     | otherwise
@@ -44,10 +46,10 @@ r_paren_match parsingData
 l_paren_match :: ParsingData -> ParsingData
 l_paren_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN"
-        = ParsingData {   lookAheadToken=(token (head (input parsingData)))
+        = ParsingData {   lookAheadToken=(token (head(tail(input parsingData))))
                         , hasFailed=False
-                        , line=(line_scan (head (input parsingData)))
-                        , column=(column_scan (head (input parsingData)))
+                        , line=(line_scan (head(tail(input parsingData))))
+                        , column=(column_scan (head(tail(input parsingData))))
                         , input=(tail (input parsingData))
                     }
     | otherwise
@@ -58,10 +60,10 @@ l_paren_match parsingData
 assignment_match :: ParsingData -> ParsingData
 assignment_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_ASSIGN"
-        = ParsingData {   lookAheadToken=(token (head (input parsingData)))
+        = ParsingData {   lookAheadToken=(token (head(tail(input parsingData))))
                         , hasFailed=False
-                        , line=(line_scan (head (input parsingData)))
-                        , column=(column_scan (head (input parsingData)))
+                        , line=(line_scan (head(tail(input parsingData))))
+                        , column=(column_scan (head(tail(input parsingData))))
                         , input=(tail (input parsingData))
                     }
     | otherwise
@@ -72,10 +74,10 @@ assignment_match parsingData
 then_match :: ParsingData -> ParsingData
 then_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_THEN"
-        = ParsingData {   lookAheadToken=(token (head (input parsingData)))
+        = ParsingData {   lookAheadToken=(token (head(tail(input parsingData))))
                         , hasFailed=False
-                        , line=(line_scan (head (input parsingData)))
-                        , column=(column_scan (head (input parsingData)))
+                        , line=(line_scan (head(tail(input parsingData))))
+                        , column=(column_scan (head(tail(input parsingData))))
                         , input=(tail (input parsingData))
                     }
     | otherwise
@@ -86,10 +88,10 @@ then_match parsingData
 until_match :: ParsingData -> ParsingData
 until_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_UNTIL"
-        = ParsingData {   lookAheadToken=(token (head (input parsingData)))
+        = ParsingData {   lookAheadToken=(token (head(tail(input parsingData))))
                         , hasFailed=False
-                        , line=(line_scan (head (input parsingData)))
-                        , column=(column_scan (head (input parsingData)))
+                        , line=(line_scan (head(tail(input parsingData))))
+                        , column=(column_scan (head(tail(input parsingData))))
                         , input=(tail (input parsingData))
                     }
     | otherwise
@@ -100,10 +102,10 @@ until_match parsingData
 do_match :: ParsingData -> ParsingData
 do_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_DO"
-        = ParsingData {   lookAheadToken=(token (head (input parsingData)))
+        = ParsingData {   lookAheadToken=(token (head(tail(input parsingData))))
                         , hasFailed=False
-                        , line=(line_scan (head (input parsingData)))
-                        , column=(column_scan (head (input parsingData)))
+                        , line=(line_scan (head(tail(input parsingData))))
+                        , column=(column_scan (head(tail(input parsingData))))
                         , input=(tail (input parsingData))
                     }
     | otherwise
@@ -114,10 +116,10 @@ do_match parsingData
 semic_match :: ParsingData -> ParsingData
 semic_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_SCOLON"
-        = ParsingData {   lookAheadToken=(token (head (input parsingData)))
+        = ParsingData {   lookAheadToken=(token (head(tail(input parsingData))))
                         , hasFailed=False
-                        , line=(line_scan (head (input parsingData)))
-                        , column=(column_scan (head (input parsingData)))
+                        , line=(line_scan (head(tail(input parsingData))))
+                        , column=(column_scan (head(tail(input parsingData))))
                         , input=(tail (input parsingData))
                     }
     | otherwise
@@ -128,10 +130,10 @@ semic_match parsingData
 period_match :: ParsingData -> ParsingData
 period_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PERIOD"
-        = ParsingData {   lookAheadToken=(token (head (input parsingData)))
+        = ParsingData {   lookAheadToken=(token (head(tail(input parsingData))))
                         , hasFailed=False
-                        , line=(line_scan (head (input parsingData)))
-                        , column=(column_scan (head (input parsingData)))
+                        , line=(line_scan (head(tail(input parsingData))))
+                        , column=(column_scan (head(tail(input parsingData))))
                         , input=(tail (input parsingData))
                     }
     | otherwise
@@ -142,10 +144,10 @@ period_match parsingData
 colon_match :: ParsingData -> ParsingData
 colon_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_COLON"
-        = ParsingData {   lookAheadToken=(token (head (input parsingData)))
+        = ParsingData {   lookAheadToken=(token (head(tail(input parsingData))))
                         , hasFailed=False
-                        , line=(line_scan (head (input parsingData)))
-                        , column=(column_scan (head (input parsingData)))
+                        , line=(line_scan (head(tail(input parsingData))))
+                        , column=(column_scan (head(tail(input parsingData))))
                         , input=(tail (input parsingData))
                     }
     | otherwise
@@ -156,10 +158,10 @@ colon_match parsingData
 end_match :: ParsingData -> ParsingData
 end_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_END"
-        = ParsingData {   lookAheadToken=(token (head (input parsingData)))
+        = ParsingData {   lookAheadToken=(token (head(tail(input parsingData))))
                         , hasFailed=False
-                        , line=(line_scan (head (input parsingData)))
-                        , column=(column_scan (head (input parsingData)))
+                        , line=(line_scan (head(tail(input parsingData))))
+                        , column=(column_scan (head(tail(input parsingData))))
                         , input=(tail (input parsingData))
                     }
     | otherwise
@@ -170,10 +172,10 @@ end_match parsingData
 ident_match :: ParsingData -> ParsingData
 ident_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = ParsingData {   lookAheadToken=(token (head (input parsingData)))
+        = ParsingData {   lookAheadToken=(token (head(tail(input parsingData))))
                         , hasFailed=False
-                        , line=(line_scan (head (input parsingData)))
-                        , column=(column_scan (head (input parsingData)))
+                        , line=(line_scan (head(tail(input parsingData))))
+                        , column=(column_scan (head(tail(input parsingData))))
                         , input=(tail (input parsingData))
                     }
     | otherwise
@@ -184,10 +186,10 @@ ident_match parsingData
 eof_match :: ParsingData -> ParsingData
 eof_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_EOF"
-        = ParsingData {   lookAheadToken=(token (head (input parsingData)))
+        = ParsingData {   lookAheadToken=(token (head(tail(input parsingData))))
                         , hasFailed=False
-                        , line=(line_scan (head (input parsingData)))
-                        , column=(column_scan (head (input parsingData)))
+                        , line=(line_scan (head(tail(input parsingData))))
+                        , column=(column_scan (head(tail(input parsingData))))
                         , input=(tail (input parsingData))
                     }
     | otherwise

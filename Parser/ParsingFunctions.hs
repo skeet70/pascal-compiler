@@ -11,6 +11,8 @@
 
 module Parser.ParsingFunctions where
 
+import Debug.Trace
+
 import Parser.ParsingData
 import Parser.Helper
 import Scanner.TokenTable
