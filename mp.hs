@@ -42,9 +42,9 @@ scanFile :: (String, String, Token, Int, Int) -> ParsingData -> ParsingData
 scanFile (source, lexeme, token_in, column_in, line_in) parsingData
     | token_in == EndOfFile MP_EOF
         = ParsingData {   hasFailed=False
-                        , lookAheadToken=token (head (input parsingData))
-                        , line=line_scan (head (input parsingData))
-                        , column=column_scan (head (input parsingData))
+                        , lookAheadToken=if null (input parsingData) then Symbol MP_SCOLON else token (head (input parsingData))
+                        , line=if null (input parsingData) then 0 else line_scan (head (input parsingData))
+                        , column=if null (input parsingData) then 0 else column_scan (head (input parsingData))
                         , input=input parsingData ++ [scannerData]
                     }
     | otherwise
