@@ -1,6 +1,7 @@
 -- Authored by Tyler J. Huffman
 --
 -- This is the list of functions used in the microPascal compiler
+-- that are tested and working correctly
 module Scanner.DigitFSA (digitFSA) where
 
 import Scanner.TokenTable

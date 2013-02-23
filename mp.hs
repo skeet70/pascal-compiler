@@ -12,6 +12,9 @@
 
 import Scanner.Dispatcher
 import Scanner.TokenTable
+import Scanner.ScannerData
+import Parser.ParsingData
+import Parser.ParsingFunctions (systemGoal)
 
 import System.Environment
 import System.IO
@@ -26,12 +29,49 @@ driver = do
     (filename:_) <- getArgs
     source <- readFile filename
     if ((dropWhile (/= '.') filename) == ".mp")
-    then extractData $ getToken (source, lexeme, column, line)
-    else putStrLn "Please insert a valid file."
+    then parse (scanFile (getToken (source, lexeme, column, line)) parsingData)
+    --then extractData $ getToken (source, lexeme, column, line)
+    else putStrLn "Please insert a valid fil."
       where
         lexeme = ""
         column = 1
         line = 1
+        parsingData = ParsingData {hasFailed=False, input=[]}
+
+scanFile :: (String, String, Token, Int, Int) -> ParsingData -> ParsingData
+scanFile (source, lexeme, token_in, column_in, line_in) parsingData
+    | token_in == EndOfFile MP_EOF
+        = ParsingData {   hasFailed=False
+                        , lookAheadToken=if null (input parsingData) then Symbol MP_SCOLON else token (head (input parsingData))
+                        , line=if null (input parsingData) then 0 else line_scan (head (input parsingData))
+                        , column=if null (input parsingData) then 0 else column_scan (head (input parsingData))
+                        , input=input parsingData ++ [scannerData]
+                    }
+    | otherwise
+        = scanFile (getToken (source, "", column_in, line_in)) newParsing
+      where
+        scannerData = convertToScannerData (source, lexeme, token_in, column_in, line_in)
+        newParsing = ParsingData {hasFailed=False, input=input parsingData ++ [scannerData]}
+
+parse :: ParsingData -> IO()
+parse parsingData
+    | hasFailed finalData == True
+        = putStrLn ("Failed at column " ++ show (column finalData) ++ ", line " ++ show (line finalData) ++ " with message: " ++ errorString finalData)
+    | otherwise
+        = putStrLn (errorString finalData)
+  where
+    finalData = systemGoal parsingData
+
+convertToScannerData :: (String, String, Token, Int, Int) -> ScannerData
+convertToScannerData (source, lexeme, token, column, line)
+    = ScannerData {   token=token
+                    , line_scan=line
+                    , column_scan=column
+                }
+
+packParsingData :: ScannerData -> ParsingData -> ParsingData
+packParsingData scannerData parsingData
+    = parsingData
 
 extractData :: (String, String, Token, Int, Int) -> IO ()
 extractData (source, lexeme, token, column, line) = do
@@ -41,4 +81,4 @@ extractData (source, lexeme, token, column, line) = do
     else extractData $ getToken (source, "", column, line)
 
 inputError :: IOError -> IO ()
-inputError e = putStrLn "Please insert a valid file."
+inputError e = putStrLn "Please insert a valid fle."
