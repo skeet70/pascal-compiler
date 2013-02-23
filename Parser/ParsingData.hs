@@ -8,6 +8,5 @@ data ParsingData = ParsingData {  lookAheadToken :: Token
                                 , line :: Int
                                 , column :: Int
                                 , input :: [ScannerData]
-                                --otherStuff :: Token
-                                --exampleStuff :: Bool
+                                , errorString :: String
                                 } deriving (Show)

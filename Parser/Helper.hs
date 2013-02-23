@@ -9,20 +9,21 @@ import Debug.Trace
 
 -- This is called any time a rule cannot successfully match the current token.
 -- It returns the same ParsingData object with the hasFailed flag tripped.
-syntaxError :: ParsingData -> ParsingData
-syntaxError parsingData = ParsingData {   lookAheadToken=(lookAheadToken parsingData)
+syntaxError :: String -> ParsingData -> ParsingData
+syntaxError errorList parsingData = ParsingData {   lookAheadToken=(lookAheadToken parsingData)
                                         , hasFailed=True
                                         , line=(line parsingData)
                                         , column=(column parsingData)
                                         , input=(input parsingData)
+                                        , errorString="Expected " ++ errorList ++ " but found " ++ unwrapToken (lookAheadToken parsingData)
                                     }
 
 -- Generic called whenever a terminal is encountered. Gets the next token from
 -- the input list, as well as the corresponding line_scan and column_scan.
 match :: ParsingData -> ParsingData
-match parsingData = ParsingData {     lookAheadToken=if 
-                                        length (input parsingData) == 0 || 
-                                        length (input parsingData) == 1 
+match parsingData = ParsingData {     lookAheadToken=if
+                                        length (input parsingData) == 0 ||
+                                        length (input parsingData) == 1
                                         then EndOfFile MP_EOF
                                         else (token (head(tail(input parsingData))))
                                     , hasFailed=False
@@ -69,7 +70,7 @@ r_paren_match parsingData
                             else (tail (input parsingData))
                     }
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_RPAREN" parsingData
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
 -- that should be a (
@@ -99,7 +100,7 @@ l_paren_match parsingData
                             else (tail (input parsingData))
                     }
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_LPAREN" parsingData
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
 -- that should be a :=
@@ -129,7 +130,7 @@ assignment_match parsingData
                             else (tail (input parsingData))
                     }
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_ASSIGN" parsingData
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
 -- that should be a then
@@ -159,7 +160,7 @@ then_match parsingData
                             else (tail (input parsingData))
                     }
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_THEN" parsingData
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
 -- that should be an until
@@ -167,8 +168,8 @@ until_match :: ParsingData -> ParsingData
 until_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_UNTIL"
         = ParsingData {     lookAheadToken=if 
-                                        length (input parsingData) == 0 || 
-                                        length (input parsingData) == 1 
+                                        length (input parsingData) == 0 ||
+                                        length (input parsingData) == 1
                                         then EndOfFile MP_EOF
                                         else (token (head(tail(input parsingData))))
                                     , hasFailed=False
@@ -188,7 +189,7 @@ until_match parsingData
                                         else (tail (input parsingData))
                                 }
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_UNTIL" parsingData
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
 -- that should be a do
@@ -196,8 +197,8 @@ do_match :: ParsingData -> ParsingData
 do_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_DO"
         = ParsingData {     lookAheadToken=if 
-                                        length (input parsingData) == 0 || 
-                                        length (input parsingData) == 1 
+                                        length (input parsingData) == 0 ||
+                                        length (input parsingData) == 1
                                         then EndOfFile MP_EOF
                                         else (token (head(tail(input parsingData))))
                                     , hasFailed=False
@@ -217,16 +218,16 @@ do_match parsingData
                                         else (tail (input parsingData))
                                 }
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_DO" parsingData
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
 -- that should be a ;
 semic_match :: ParsingData -> ParsingData
 semic_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_SCOLON"
-        = ParsingData {     lookAheadToken=if 
-                                        length (input parsingData) == 0 || 
-                                        length (input parsingData) == 1 
+        = ParsingData {     lookAheadToken=if
+                                        length (input parsingData) == 0 ||
+                                        length (input parsingData) == 1
                                         then EndOfFile MP_EOF
                                         else (token (head(tail(input parsingData))))
                                     , hasFailed=False
@@ -246,16 +247,16 @@ semic_match parsingData
                                         else (tail (input parsingData))
                                 }
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_SCOLON" parsingData
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
 -- that should be a .
 period_match :: ParsingData -> ParsingData
 period_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PERIOD"
-        = ParsingData {     lookAheadToken=if 
-                                        length (input parsingData) == 0 || 
-                                        length (input parsingData) == 1 
+        = ParsingData {     lookAheadToken=if
+                                        length (input parsingData) == 0 ||
+                                        length (input parsingData) == 1
                                         then EndOfFile MP_EOF
                                         else (token (head(tail(input parsingData))))
                                     , hasFailed=False
@@ -275,16 +276,16 @@ period_match parsingData
                                         else (tail (input parsingData))
                                 }
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_PERIOD" parsingData
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
 -- that should be a :
 colon_match :: ParsingData -> ParsingData
 colon_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_COLON"
-        = ParsingData {     lookAheadToken=if 
-                                        length (input parsingData) == 0 || 
-                                        length (input parsingData) == 1 
+        = ParsingData {     lookAheadToken=if
+                                        length (input parsingData) == 0 ||
+                                        length (input parsingData) == 1
                                         then EndOfFile MP_EOF
                                         else (token (head(tail(input parsingData))))
                                     , hasFailed=False
@@ -304,16 +305,16 @@ colon_match parsingData
                                         else (tail (input parsingData))
                                 }
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_COLON" parsingData
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
 -- that should be a "end"
 end_match :: ParsingData -> ParsingData
 end_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_END"
-        = ParsingData {     lookAheadToken=if 
-                                        length (input parsingData) == 0 || 
-                                        length (input parsingData) == 1 
+        = ParsingData {     lookAheadToken=if
+                                        length (input parsingData) == 0 ||
+                                        length (input parsingData) == 1
                                         then EndOfFile MP_EOF
                                         else (token (head(tail(input parsingData))))
                                     , hasFailed=False
@@ -333,16 +334,16 @@ end_match parsingData
                                         else (tail (input parsingData))
                                 }
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_END" parsingData
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
 -- that should be an identifier
 ident_match :: ParsingData -> ParsingData
 ident_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = ParsingData {     lookAheadToken=if 
-                                        length (input parsingData) == 0 || 
-                                        length (input parsingData) == 1 
+        = ParsingData {     lookAheadToken=if
+                                        length (input parsingData) == 0 ||
+                                        length (input parsingData) == 1
                                         then EndOfFile MP_EOF
                                         else (token (head(tail(input parsingData))))
                                     , hasFailed=False
@@ -362,16 +363,16 @@ ident_match parsingData
                                         else (tail (input parsingData))
                                 }
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IDENTIFIER" parsingData
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
 -- that should be an end-of-file
 eof_match :: ParsingData -> ParsingData
 eof_match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_EOF"
-        = ParsingData {     lookAheadToken=if 
-                                        length (input parsingData) == 0 || 
-                                        length (input parsingData) == 1 
+        = ParsingData {     lookAheadToken=if
+                                        length (input parsingData) == 0 ||
+                                        length (input parsingData) == 1
                                         then EndOfFile MP_EOF
                                         else (token (head(tail(input parsingData))))
                                     , hasFailed=False
@@ -389,6 +390,7 @@ eof_match parsingData
                                         length (input parsingData) == 0
                                         then []
                                         else (tail (input parsingData))
+                                    , errorString="Parse complete, stop poking me!"
                                 }
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_EOF" parsingData

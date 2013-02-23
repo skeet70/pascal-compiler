@@ -25,7 +25,7 @@ systemGoal parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROGRAM"
         = eof_match (program parsingData)
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_PROGRAM" parsingData
 
 -- Program ⟶ ProgramHeading ";" Block "."
 program :: ParsingData -> ParsingData
@@ -35,7 +35,7 @@ program parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROGRAM"
         = period_match (block (semic_match (programHeading parsingData)))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_PROGRAM" parsingData
 
 -- ProgramHeading ⟶ "program" ProgramIdentifier
 programHeading :: ParsingData -> ParsingData
@@ -45,7 +45,7 @@ programHeading parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROGRAM"
         = programIdentifier (match parsingData)
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_PROGRAM" parsingData
 
 -- Block ⟶ VariableDeclarationPart ProcedureAndFunctionDeclarationPart StatementPart
 block :: ParsingData -> ParsingData
@@ -55,7 +55,7 @@ block parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
         = statementPart ( procedureAndFunctionDeclarationPart ( variableDeclarationPart parsingData))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_VAR" parsingData
 
 -- VariableDeclarationPart ⟶ "var" VariableDeclaration ";" VariableDeclarationTail
 variableDeclarationPart :: ParsingData -> ParsingData
@@ -65,7 +65,7 @@ variableDeclarationPart parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
         = variableDeclarationTail ( semic_match ( variableDeclaration ( match parsingData)))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_VAR" parsingData
 
 -- VariableDeclarationTail ⟶ VariableDeclaration ";" VariableDeclarationTail
 --                         ⟶ ε
@@ -86,7 +86,7 @@ variableDeclaration parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = typeParser ( colon_match ( identifierList parsingData))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IDENTIFIER" parsingData
 
 -- Type ⟶ "Integer"
 --      ⟶ "Float"
@@ -98,7 +98,7 @@ typeParser parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN"]
         = match parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_INTEGER, MP_FLOAT, or MP_BOOLEAN" parsingData
 
 -- ProcedureAndFunctionDeclarationPart ⟶ ProcedureDeclaration ProcedureAndFunctionDeclarationPart
 --                                     ⟶ FunctionDeclaration ProcedureAndFunctionDeclarationPart
@@ -122,7 +122,7 @@ procedureDeclaration parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROCEDURE"
         = semic_match ( block ( semic_match ( procedureHeading parsingData)))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_PROCEDURE" parsingData
 
 -- FunctionDeclaration ⟶ FunctionHeading ";" Block ";"
 functionDeclaration :: ParsingData -> ParsingData
@@ -132,7 +132,7 @@ functionDeclaration parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
         = semic_match ( block ( semic_match ( functionHeading parsingData)))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_FUNCTION" parsingData
 
 -- ProcedureHeading ⟶ "procedure" procedureIdentifier OptionalFormalParameterList
 procedureHeading :: ParsingData -> ParsingData
@@ -142,7 +142,7 @@ procedureHeading parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROCEDURE"
         = optionalFormalParameterList ( procedureIdentifier ( match parsingData))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_PROCEDURE" parsingData
 
 -- FunctionHeading ⟶ "function" functionIdentifier OptionalFormalParameterList ":" Type
 functionHeading :: ParsingData -> ParsingData
@@ -152,7 +152,7 @@ functionHeading parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
         = typeParser ( colon_match ( optionalFormalParameterList ( functionIdentifier ( match parsingData))))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_FUNCTION" parsingData
 
 -- OptionalFormalParameterList ⟶ "(" FormalParameterSection FormalParameterSectionTail ")"
 --                             ⟶ ε
@@ -187,7 +187,7 @@ formalParameterSection parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
         = variableParameterSection parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IDENTIFIER or MP_VAR" parsingData
 
 -- ValueParameterSection ⟶ IdentifierList ":" Type
 valueParameterSection :: ParsingData -> ParsingData
@@ -197,7 +197,7 @@ valueParameterSection parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = typeParser ( colon_match ( identifierList parsingData))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IDENTIFIER" parsingData
 
 -- VariableParameterSection ⟶ "var" IdentifierList ":" Type
 variableParameterSection :: ParsingData -> ParsingData
@@ -207,7 +207,7 @@ variableParameterSection parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
         = typeParser ( colon_match ( identifierList ( match parsingData)))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_VAR" parsingData
 
 -- StatementPart ⟶ CompoundStatement
 statementPart :: ParsingData -> ParsingData
@@ -217,7 +217,7 @@ statementPart parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
         = compoundStatement parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_BEGIN" parsingData
 
 -- CompoundStatement ⟶ "begin" StatementSequence "end"
 compoundStatement :: ParsingData -> ParsingData
@@ -227,7 +227,7 @@ compoundStatement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
         = end_match ( statementSequence ( match parsingData))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_BEGIN" parsingData
 
 -- StatementSequence ⟶ Statement StatementTail
 statementSequence :: ParsingData -> ParsingData
@@ -237,7 +237,7 @@ statementSequence parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_BEGIN", "MP_READ", "MP_WRITE", "MP_IDENTIFIER", "MP_IF", "MP_WHILE", "MP_REPEAT", "MP_FOR"]
         = statementTail ( statement ( parsingData))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_BEGIN, MP_READ, MP_WRITE, MP_IDENTIFIER, MP_IF, MP_WHILE, MP_REPEAT, or MP_FOR" parsingData
 
 -- StatementTail ⟶ ";" Statement StatementTail
 --               ⟶ ε
@@ -277,7 +277,7 @@ expression parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
         = optionalRelationalPart (simpleExpression parsingData)
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN" parsingData
 
 -- OptionalRelationalPart  ⟶ RelationalOperator SimpleExpression
 --                         ⟶ ε
@@ -303,7 +303,7 @@ relationalOperator parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_EQUALS", "MP_LTHAN", "MP_GTHAN", "MP_LEQUAL", "MP_GEQUAL", "MP_NEQUAL"]
         = match parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_EQUALS, MP_LTHAN, MP_GTHAN, MP_LEQUAL, MP_GEQUAL, or MP_NEQUAL" parsingData
 
 -- SimpleExpression        ⟶ OptionalSign Term TermTail
 simpleExpression :: ParsingData -> ParsingData
@@ -352,7 +352,7 @@ addingOperator parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_OR"]
         = match parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_PLUS, MP_MINUS, or MP_OR" parsingData
 
 -- Term                    ⟶ Factor FactorTail
 term :: ParsingData -> ParsingData
@@ -366,7 +366,7 @@ term parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_NOT", "MP_LPAREN"]
         = factorTail (factor parsingData)
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_NOT, or MP_LPAREN" parsingData
 
 -- FactorTail              ⟶ MultiplyingOperator Factor FactorTail
 --                         ⟶ ε
@@ -390,7 +390,7 @@ multiplyingOperator parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_TIMES", "MP_DIV", "MP_MOD", "MP_AND"]
         = match parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_TIMES, MP_DIV, MP_MOD, or MP_AND" parsingData
 
 -- Factor                  ⟶ UnsignedInteger
 --                         ⟶ "not" Factor
@@ -409,7 +409,7 @@ factor parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN"
         = r_paren_match (expression (match parsingData))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IDENTIFIER, MP_INTEGER_LIT, MP_FIXED_LIT, MP_FLOAT_LIT, MP_NOT, or MP_LPAREN" parsingData
 
 -- ProgramIdentifier       ⟶ Identifier
 programIdentifier :: ParsingData -> ParsingData
@@ -419,7 +419,7 @@ programIdentifier parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = match parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IDENTIFIER" parsingData
 
 -- ProcedureIdentifier     ⟶ Identifier
 procedureIdentifier :: ParsingData -> ParsingData
@@ -429,7 +429,7 @@ procedureIdentifier parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = match parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IDENTIFIER" parsingData
 
 -- FunctionIdentifier      ⟶ Identifier
 functionIdentifier :: ParsingData -> ParsingData
@@ -439,7 +439,7 @@ functionIdentifier parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_IDENTIFIER"
         = match parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IDENTIFIER" parsingData
 
 -- BooleanExpression       ⟶ Expression
 booleanExpression :: ParsingData -> ParsingData
@@ -453,7 +453,7 @@ booleanExpression parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
         = expression parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN" parsingData
 
 -- OrdinalExpression       ⟶ Expression
 ordinalExpression :: ParsingData -> ParsingData
@@ -467,7 +467,7 @@ ordinalExpression parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
         = expression parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN"parsingData
 
 -- IdentifierList          ⟶ Identifier IdentifierTail
 identifierList :: ParsingData -> ParsingData
@@ -477,7 +477,7 @@ identifierList parsingData
     | unwrapToken (lookAheadToken parsingData) =="MP_IDENTIFIER"
         = identifierList (match parsingData)
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IDENTIFIER" parsingData
 
 -- IdentifierTail          ⟶ "," Identifier IdentifierTail
 --                         ⟶ ε
@@ -550,7 +550,7 @@ readStatement parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_READ"
         = r_paren_match (readParameterTail (readParameter (l_paren_match (match parsingData))))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_READ" parsingData
 
 --ReadParameterTail ⟶ "," ReadParameter ReadParameterTail
 --                  ⟶ ε
@@ -571,7 +571,7 @@ readParameter parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = functionIdentifier parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IDENTIFIER" parsingData
 
 --WriteStatement ⟶ "write" "(" WriteParameter WriteParameterTail ")"
 writeStatement :: ParsingData -> ParsingData
@@ -581,7 +581,7 @@ writeStatement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_WRITE"
         = r_paren_match (writeParameterTail (writeParameter (l_paren_match (match parsingData))))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_WRITE" parsingData
 
 --WriteParameterTail  ⟶ "," WriteParameter
 --                    ⟶ ε
@@ -602,7 +602,7 @@ writeParameter parsingData
     | any (== unwrapToken (lookAheadToken parsingData)) ["MP_PLUS", "MP_MINUS"]
         = ordinalExpression parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_PLUS or MP_MINUS" parsingData
 
 --AssignmentStatement ⟶ FunctionIdentifier ":=" Expression
 assignmentStatement :: ParsingData -> ParsingData
@@ -612,7 +612,7 @@ assignmentStatement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = expression (assignment_match (functionIdentifier parsingData))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IDENTIFIER" parsingData
 
 --IfStatement ⟶ "if" BooleanExpression "then" Statement OptionalElsePart
 ifStatement :: ParsingData -> ParsingData
@@ -622,7 +622,7 @@ ifStatement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IF"
         = optionalElsePart (statement (then_match (booleanExpression (match parsingData))))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IF" parsingData
 
 --OptionalElsePart ⟶ "else" Statement
 --                 ⟶ ε
@@ -643,7 +643,7 @@ repeatStatement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_REPEAT"
         = booleanExpression (until_match (statementSequence (match parsingData)))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_REPEAT" parsingData
 
 --WhileStatement ⟶ "while" BooleanExpression "do" Statement
 whileStatement :: ParsingData -> ParsingData
@@ -653,7 +653,7 @@ whileStatement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_WHILE"
         = statement (do_match (booleanExpression (match parsingData)))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_WHILE" parsingData
 
 --ForStatement ⟶ "for" ControlVariable ":=" InitialValue StepValue FinalValue "do" Statement
 forStatement :: ParsingData -> ParsingData
@@ -663,7 +663,7 @@ forStatement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FOR"
         = statement (do_match (finalValue (stepValue (initialValue (assignment_match (controlVariable (match parsingData)))))))
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_FOR" parsingData
 
 --ControlVariable ⟶ FunctionIdentifier
 controlVariable :: ParsingData -> ParsingData
@@ -673,7 +673,7 @@ controlVariable parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = functionIdentifier parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IDENTIFIER" parsingData
 
 --InitialValue ⟶ OrdinalExpression
 initialValue :: ParsingData -> ParsingData
@@ -683,7 +683,7 @@ initialValue parsingData
     | any (== unwrapToken (lookAheadToken parsingData)) ["MP_PLUS", "MP_MINUS"]
         = ordinalExpression parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_PLUS or MP_MINUS" parsingData
 
 --StepValue ⟶ "to"
 --          ⟶ "downto"
@@ -696,7 +696,7 @@ stepValue parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_DOWNTO"
         = match parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_TO or MP_DOWNTO" parsingData
 
 --FinalValue ⟶ OrdinalExpression
 finalValue :: ParsingData -> ParsingData
@@ -706,7 +706,7 @@ finalValue parsingData
     | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS"]
         = ordinalExpression parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_PLUS or MP_MINUS" parsingData
 
 --ProcedureStatement ⟶ ProcedureIdentifier OptionalActualParameterList
 procedureStatement :: ParsingData -> ParsingData
@@ -716,7 +716,7 @@ procedureStatement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = optionalActualParameterList (procedureIdentifier parsingData)
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_IDENTIFIER" parsingData
 
 --OptionalActualParameterList ⟶ "(" ActualParameter ActualParameterTail ")"
 --                            ⟶ ε
@@ -748,4 +748,4 @@ actualParameter parsingData
     | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS"]
         = ordinalExpression parsingData
     | otherwise
-        = syntaxError parsingData
+        = syntaxError "MP_PLUS or MP_MINUS" parsingData
