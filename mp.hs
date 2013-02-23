@@ -31,7 +31,7 @@ driver = do
     if ((dropWhile (/= '.') filename) == ".mp")
     then parse (scanFile (getToken (source, lexeme, column, line)) parsingData)
     --then extractData $ getToken (source, lexeme, column, line)
-    else putStrLn "Please insert a valid fil."
+    else putStrLn "Please insert a valid file."
       where
         lexeme = ""
         column = 1
@@ -81,4 +81,4 @@ extractData (source, lexeme, token, column, line) = do
     else extractData $ getToken (source, "", column, line)
 
 inputError :: IOError -> IO ()
-inputError e = putStrLn "Please insert a valid fle."
+inputError e = putStrLn "Please insert a valid file."
