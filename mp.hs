@@ -54,7 +54,13 @@ scanFile (source, lexeme, token_in, column_in, line_in) parsingData
         newParsing = ParsingData {hasFailed=False, input=input parsingData ++ [scannerData]}
 
 parse :: ParsingData -> IO()
-parse parsingData = putStrLn $ show (systemGoal parsingData)
+parse parsingData
+    | hasFailed finalData == True
+        = putStrLn ("Failed at column " ++ show (column finalData) ++ ", line " ++ show (line finalData) ++ " with message: " ++ errorString finalData)
+    | otherwise
+        = putStrLn (errorString finalData)
+  where
+    finalData = systemGoal parsingData
 
 convertToScannerData :: (String, String, Token, Int, Int) -> ScannerData
 convertToScannerData (source, lexeme, token, column, line)
