@@ -20,8 +20,9 @@ digitFSA :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
 digitFSA (src, lexeme, column_number, line_number)
     | stringHead `elem` ['0'..'9']
         = digitFSA (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
-    | (stringHead == 'e' && stringNext `elem` ['0'..'9']) || (stringHead == 'E' && stringNext `elem` ['0'..'9'])
-        = digitFSAforE (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
+    | (stringHead == 'e' && (stringNext `elem` ['0'..'9'] || stringNext == '-')) 
+        || (stringHead == 'E' && (stringNext `elem` ['0'..'9'] || stringNext == '-'))
+            = digitFSAforE (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
     | stringHead == '.' && stringNext `elem` ['0'..'9']
         = digitFSAforPeriod (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
     | otherwise
@@ -41,7 +42,7 @@ digitFSA (src, lexeme, column_number, line_number)
 -- Returns: Tuple containing the above
 digitFSAforE :: (String, String, Int, Int) -> (String, String, Token, Int, Int)
 digitFSAforE (src, lexeme, column_number, line_number)
-    | stringHead `elem` ['0'..'9']
+    | stringHead `elem` ['0'..'9'] || stringHead == '-'
         = digitFSAforE (tail src, lexeme ++ (charToString stringHead), column_number + 1, line_number)
     | otherwise
         = (src, lexeme, IdentifierOrLiteral MP_FLOAT_LIT, column_number, line_number)
