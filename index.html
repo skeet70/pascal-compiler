@@ -32,23 +32,34 @@
       <section>
         <h3>Overview</h3>
 
-<p>This is a <a href="http://hypertextbookshop.com/transPL/Resources/microPascalCFG.html">microPascal</a> compiler that is written in the Haskell programming language. It's a project compiler for the computer science capstone course at <a href="http://www.cs.montana.edu/course/csci-468">Montana State University</a>. A group of three CS students created this, <a href="https://github.com/skeet70/">Murph Murphy</a>, <a href="https://github.com/Gabrinthei/">James Sonntag</a>, and <a href="https://github.com/iduhetonas/">Tyler Huffman</a>.</p>
+<p>This is a <a href="http://hypertextbookshop.com/transPL/Resources/microPascalCFG.html">microPascal</a> compiler that is written in the Haskell programming language. It's a project compiler for the computer science capstone course at <a href="http://www.cs.montana.edu/course/csci-468">Montana State University</a>.</p>
+
+<h3>Setup</h3>
+
+<p>The program is written in Haskell and should be compiled with GHC 7.4.2+. Clone the repository or download an archive of the project using the links to the left. Then issue the following commands in the terminal to compile the driver:</p>
+
+<pre><code>cd ~/pascal-compiler
+ghc mp.hs
+</code></pre>
+
+<p>The compiler can then be run using this terminal command:</p>
+
+<pre><code>mp input_file.mp
+</code></pre>
+
+<p>Which will compile the microPascal source code, and output a semantic analyzer data file. Several test input files are provided in the <code>pascal-compiler/Tests/</code> folder.</p>
 
 <h3>Objectives</h3>
 
-<p>Our main objective for this project was to expand our abilities. Up to this point we have had a mostly imperative programming experience at the school, and wanted to use this opportunity to learn about functional programming as well as compilers.</p>
+<p>Our main objective for this project was to expand our abilities. Up to this point we have had a mostly imperative programming experience at the school, and wanted to use this opportunity to learn about functional programming as well as compilers. We planned to implement a scanner, parser, and semantic analyzer from scratch; then tie them all together into a working compiler.</p>
 
-<h3>Rather Drive Stick?</h3>
+<h3>Progress and Teamwork</h3>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<p>So far this has been an enjoyable experience! As a team we've worked very well together and we've been able to learn a ton about Haskell, functional programming, source control, and compilers. Currently, we are working on the design and preliminary implementation of the semantic analyzer. The most current code can be seen in the develop branch.</p>
 
 <h3>Authors and Contributors</h3>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+<p>A group of three CS students created this, Murph Murphy(<a href="https://github.com/skeet70" class="user-mention">@skeet70</a>), James Sonntag(<a href="https://github.com/Gabrinthei" class="user-mention">@Gabrinthei</a>), and Tyler Huffman(<a href="https://github.com/iduhetonas" class="user-mention">@iduhetonas</a>). All three of us split the workload as evenly as possible, and all of the design and architecture decisions were cooperatively made. Specific tasks implemented by each member of the team can be seen in the GitHub repository <a href="https://github.com/skeet70/pascal-compiler/issues">issues tracker</a>, which was used for team management.</p>
       </section>
       <footer>
         <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
