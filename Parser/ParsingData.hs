@@ -9,4 +9,11 @@ data ParsingData = ParsingData {  lookAheadToken :: Token
                                 , column :: Int
                                 , errorString :: String
                                 , input :: [ScannerData]
+                                , scopeTables :: [ScopeData]
                                 } deriving (Show)
+
+data ScopeData = ScopeData {  name :: String
+                            , varType :: String
+                            , attribute :: String
+                            , offset :: Int
+                            } deriving (Show)
