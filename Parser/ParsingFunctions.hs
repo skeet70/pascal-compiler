@@ -52,7 +52,7 @@ block :: ParsingData -> ParsingData
 block parsingData
     | hasFailed parsingData == True
         = parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT", "MP_VAR"]
         = statementPart ( procedureAndFunctionDeclarationPart ( variableDeclarationPart parsingData))
     | otherwise
         = syntaxError "MP_VAR" parsingData
@@ -62,10 +62,10 @@ variableDeclarationPart :: ParsingData -> ParsingData
 variableDeclarationPart parsingData
     | hasFailed parsingData == True
         = parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT", "MP_VAR"]
         = variableDeclarationTail ( semic_match ( variableDeclaration ( match parsingData)))
     | otherwise
-        = syntaxError "MP_VAR" parsingData
+        = parsingData
 
 -- VariableDeclarationTail ⟶ VariableDeclaration ";" VariableDeclarationTail
 --                         ⟶ ε
@@ -73,7 +73,7 @@ variableDeclarationTail :: ParsingData -> ParsingData
 variableDeclarationTail parsingData
     | hasFailed parsingData == True
         = parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT"]
         = variableDeclarationTail ( semic_match ( variableDeclaration parsingData))
     | otherwise
         = parsingData
@@ -83,10 +83,10 @@ variableDeclaration :: ParsingData -> ParsingData
 variableDeclaration parsingData
     | hasFailed parsingData == True
         = parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT"]
         = typeParser ( colon_match ( identifierList parsingData))
     | otherwise
-        = syntaxError "MP_IDENTIFIER" parsingData
+        = syntaxError "MP_INTEGER, MP_FLOAT, MP_BOOLEAN, MP_STRING_LIT" parsingData
 
 -- Type ⟶ "Integer"
 --      ⟶ "Float"
@@ -95,10 +95,10 @@ typeParser :: ParsingData -> ParsingData
 typeParser parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN"]
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT"]
         = match parsingData
     | otherwise
-        = syntaxError "MP_INTEGER, MP_FLOAT, or MP_BOOLEAN" parsingData
+        = syntaxError "MP_INTEGER, MP_FLOAT, MP_BOOLEAN, MP_STRING_LIT" parsingData
 
 -- ProcedureAndFunctionDeclarationPart ⟶ ProcedureDeclaration ProcedureAndFunctionDeclarationPart
 --                                     ⟶ FunctionDeclaration ProcedureAndFunctionDeclarationPart
@@ -402,14 +402,14 @@ factor parsingData
         = parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_IDENTIFIER"
         = optionalActualParameterList (functionIdentifier parsingData)
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT", "MP_FIXED_LIT", "MP_FLOAT_LIT"]
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT", "MP_FIXED_LIT", "MP_FLOAT_LIT", "MP_STRING_LIT"]
         = match parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_NOT"
         = factor (match parsingData)
     | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN"
         = r_paren_match (expression (match parsingData))
     | otherwise
-        = syntaxError "MP_IDENTIFIER, MP_INTEGER_LIT, MP_FIXED_LIT, MP_FLOAT_LIT, MP_NOT, or MP_LPAREN" parsingData
+        = syntaxError "MP_IDENTIFIER, MP_INTEGER_LIT, MP_FIXED_LIT, MP_FLOAT_LIT, MP_NOT, MP_STRING_LIT, or MP_LPAREN" parsingData
 
 -- ProgramIdentifier       ⟶ Identifier
 programIdentifier :: ParsingData -> ParsingData
@@ -518,7 +518,7 @@ statement parsingData
         = compoundStatement parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_READ"
         = readStatement parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_WRITE"
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_WRITE", "MP_WRITELN", "MP_FSLASH"]
         = writeStatement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = assignmentStatement parsingData
@@ -578,10 +578,12 @@ writeStatement :: ParsingData -> ParsingData
 writeStatement parsingData
     | hasFailed parsingData == True
         = parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_WRITE"
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_WRITE", "MP_WRITELN"]
         = r_paren_match (writeParameterTail (writeParameter (l_paren_match (match parsingData))))
+    | unwrapToken (lookAheadToken parsingData) == "MP_FSLASH"
+        = match parsingData
     | otherwise
-        = syntaxError "MP_WRITE" parsingData
+        = syntaxError "MP_WRITE, MP_WRITELN, or /" parsingData
 
 --WriteParameterTail  ⟶ "," WriteParameter
 --                    ⟶ ε

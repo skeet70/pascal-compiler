@@ -63,6 +63,8 @@ isReservedWord (source, lexeme, token, colNum, lineNum)
         = (source, lexeme, ReservedWord MP_WHILE, colNum, lineNum)
     | map toLower lexeme == "write"
         = (source, lexeme, ReservedWord MP_WRITE, colNum, lineNum)
+    | map toLower lexeme == "writeln"
+        = (source, lexeme, ReservedWord MP_WRITELN, colNum, lineNum)
     | otherwise
         = (source, lexeme, token, colNum, lineNum)
 -- The FSA that returns anything that can be an Identifier.

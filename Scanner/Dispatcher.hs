@@ -58,6 +58,8 @@ getToken (source, lexeme, columnNumber, lineNumber)
         = (tail source, "-", Symbol MP_MINUS, columnNumber + 1, lineNumber)
     | nextChar == '*'
         = (tail source, "*", Symbol MP_TIMES, columnNumber + 1, lineNumber)
+    | nextChar == '/'
+        = (tail source, "/", Symbol MP_FSLASH, columnNumber + 1, lineNumber)
     | otherwise
         = (tail source, "", ErrorCode MP_ERROR, columnNumber + 1, lineNumber)
   where

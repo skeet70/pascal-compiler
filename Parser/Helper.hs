@@ -15,6 +15,7 @@ syntaxError errorList parsingData = ParsingData {   lookAheadToken=(lookAheadTok
                                         , line=(line parsingData)
                                         , column=(column parsingData)
                                         , input=(input parsingData)
+                                        , symbolTables=(symbolTables parsingData)
                                         , errorString="Expected " ++ errorList ++ " but found " ++ unwrapToken (lookAheadToken parsingData)
                                     }
 
