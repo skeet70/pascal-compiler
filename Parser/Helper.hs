@@ -42,6 +42,7 @@ match parsingData = ParsingData {     lookAheadToken=if
                                         length (input parsingData) == 0
                                         then []
                                         else (tail (input parsingData))
+                                    , symbolTables=(symbolTables parsingData)
                                 }
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
@@ -66,9 +67,10 @@ r_paren_match parsingData
                             then 0
                             else (column_scan (head(tail(input parsingData))))
                         , input=if
-                            length (input parsingData) == 0 
+                            length (input parsingData) == 0
                             then []
                             else (tail (input parsingData))
+                        , symbolTables=(symbolTables parsingData)
                     }
     | otherwise
         = syntaxError "MP_RPAREN" parsingData
@@ -99,6 +101,7 @@ l_paren_match parsingData
                             length (input parsingData) == 1
                             then []
                             else (tail (input parsingData))
+                        , symbolTables=(symbolTables parsingData)
                     }
     | otherwise
         = syntaxError "MP_LPAREN" parsingData
@@ -129,6 +132,7 @@ assignment_match parsingData
                             length (input parsingData) == 1
                             then []
                             else (tail (input parsingData))
+                        , symbolTables=(symbolTables parsingData)
                     }
     | otherwise
         = syntaxError "MP_ASSIGN" parsingData
@@ -159,6 +163,7 @@ then_match parsingData
                             length (input parsingData) == 1
                             then []
                             else (tail (input parsingData))
+                        , symbolTables=(symbolTables parsingData)
                     }
     | otherwise
         = syntaxError "MP_THEN" parsingData
@@ -188,6 +193,7 @@ until_match parsingData
                                         length (input parsingData) == 0
                                         then []
                                         else (tail (input parsingData))
+                                    , symbolTables=(symbolTables parsingData)
                                 }
     | otherwise
         = syntaxError "MP_UNTIL" parsingData
@@ -217,6 +223,7 @@ do_match parsingData
                                         length (input parsingData) == 0
                                         then []
                                         else (tail (input parsingData))
+                                    , symbolTables=(symbolTables parsingData)
                                 }
     | otherwise
         = syntaxError "MP_DO" parsingData
@@ -246,6 +253,7 @@ semic_match parsingData
                                         length (input parsingData) == 0
                                         then []
                                         else (tail (input parsingData))
+                                    , symbolTables=(symbolTables parsingData)
                                 }
     | otherwise
         = syntaxError "MP_SCOLON" parsingData
@@ -275,6 +283,7 @@ period_match parsingData
                                         length (input parsingData) == 0
                                         then []
                                         else (tail (input parsingData))
+                                    , symbolTables=(symbolTables parsingData)
                                 }
     | otherwise
         = syntaxError "MP_PERIOD" parsingData
@@ -304,6 +313,7 @@ colon_match parsingData
                                         length (input parsingData) == 0
                                         then []
                                         else (tail (input parsingData))
+                                    , symbolTables=(symbolTables parsingData)
                                 }
     | otherwise
         = syntaxError "MP_COLON" parsingData
@@ -333,6 +343,7 @@ end_match parsingData
                                         length (input parsingData) == 0
                                         then []
                                         else (tail (input parsingData))
+                                    , symbolTables=(symbolTables parsingData)
                                 }
     | otherwise
         = syntaxError "MP_END" parsingData
@@ -362,6 +373,7 @@ ident_match parsingData
                                         length (input parsingData) == 0
                                         then []
                                         else (tail (input parsingData))
+                                    , symbolTables=(symbolTables parsingData)
                                 }
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
@@ -391,6 +403,7 @@ eof_match parsingData
                                         length (input parsingData) == 0
                                         then []
                                         else (tail (input parsingData))
+                                    , symbolTables=(symbolTables parsingData)
                                     , errorString="Parse complete, stop poking me!"
                                 }
     | otherwise

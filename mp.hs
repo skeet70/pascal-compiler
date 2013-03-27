@@ -36,7 +36,7 @@ driver = do
         lexeme = ""
         column = 1
         line = 1
-        parsingData = ParsingData {hasFailed=False, input=[]}
+        parsingData = ParsingData {hasFailed=False, input=[], symbolTables=[]}
 
 scanFile :: (String, String, Token, Int, Int) -> ParsingData -> ParsingData
 scanFile (source, lexeme, token_in, column_in, line_in) parsingData
@@ -46,12 +46,13 @@ scanFile (source, lexeme, token_in, column_in, line_in) parsingData
                         , line=if null (input parsingData) then 0 else line_scan (head (input parsingData))
                         , column=if null (input parsingData) then 0 else column_scan (head (input parsingData))
                         , input=input parsingData ++ [scannerData]
+                        , symbolTables=[]
                     }
     | otherwise
         = scanFile (getToken (source, "", column_in, line_in)) newParsing
       where
         scannerData = convertToScannerData (source, lexeme, token_in, column_in, line_in)
-        newParsing = ParsingData {hasFailed=False, input=input parsingData ++ [scannerData]}
+        newParsing = ParsingData {hasFailed=False, input=input parsingData ++ [scannerData], symbolTables=[]}
 
 parse :: ParsingData -> IO()
 parse parsingData
