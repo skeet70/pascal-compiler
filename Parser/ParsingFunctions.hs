@@ -52,7 +52,7 @@ block :: ParsingData -> ParsingData
 block parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT", "MP_VAR"]
+    | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
         = statementPart ( procedureAndFunctionDeclarationPart ( variableDeclarationPart parsingData))
     | otherwise
         = syntaxError "MP_VAR" parsingData
@@ -62,7 +62,7 @@ variableDeclarationPart :: ParsingData -> ParsingData
 variableDeclarationPart parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT", "MP_VAR"]
+    | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
         = variableDeclarationTail ( semic_match ( variableDeclaration ( match parsingData)))
     | otherwise
         = parsingData
@@ -73,7 +73,7 @@ variableDeclarationTail :: ParsingData -> ParsingData
 variableDeclarationTail parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT"]
+    | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = variableDeclarationTail ( semic_match ( variableDeclaration parsingData))
     | otherwise
         = parsingData
@@ -83,7 +83,7 @@ variableDeclaration :: ParsingData -> ParsingData
 variableDeclaration parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT"]
+    | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = typeParser ( colon_match ( identifierList parsingData))
     | otherwise
         = syntaxError "MP_INTEGER, MP_FLOAT, MP_BOOLEAN, MP_STRING_LIT" parsingData
@@ -475,7 +475,7 @@ identifierList parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) =="MP_IDENTIFIER"
-        = identifierList (match parsingData)
+        = identifierTail (match parsingData)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
 
@@ -486,7 +486,7 @@ identifierTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_COMMA"
-        = identifierTail (ident_match (match parsingData))
+        = identifierList (ident_match (match parsingData))
     | otherwise
         = parsingData -- empty string allowed
 
