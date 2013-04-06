@@ -33,7 +33,7 @@ program parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROGRAM"
-        = period_match (block (semic_match (programHeading parsingData)))
+        = create(period_match (block (semic_match (programHeading parsingData))))
     | otherwise
         = syntaxError "MP_PROGRAM" parsingData
 
@@ -96,7 +96,13 @@ typeParser parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT"]
-        = match parsingData
+        = insertData parsingData scopeData
+      where 
+        scopeData = ScopeData { name = current_lexeme parsingData
+                               ,kind = "MP_VAR"
+                               ,varType = unwrapToken (lookAheadToken parsingData)
+                               ,offset = length (symbolTables parsingData)
+                              }
     | otherwise
         = syntaxError "MP_INTEGER, MP_FLOAT, MP_BOOLEAN, MP_STRING_LIT" parsingData
 
@@ -120,7 +126,7 @@ procedureDeclaration parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROCEDURE"
-        = semic_match ( block ( semic_match ( procedureHeading parsingData)))
+        = create (semic_match ( block ( semic_match ( procedureHeading parsingData))))
     | otherwise
         = syntaxError "MP_PROCEDURE" parsingData
 

@@ -10,6 +10,7 @@ data ParsingData = ParsingData {  lookAheadToken :: Token
                                 , errorString :: String
                                 , input :: [ScannerData]
                                 , symbolTables :: [SymbolTable]
+                                , current_lexeme :: String
                                 } deriving (Show)
 
 data SymbolTable = SymbolTable {  values :: [ScopeData] } deriving (Show)
@@ -29,6 +30,7 @@ create parsingData
                   , column=(column parsingData)
                   , input=(input parsingData)
                   , symbolTables=(symbolTables parsingData ++ [SymbolTable { values=[] }])
+                  , current_lexeme=lexeme_scan(head (input parsingData))
                 }
 
 destroy :: ParsingData -> ParsingData
@@ -39,6 +41,7 @@ destroy parsingData
                   , column=(column parsingData)
                   , input=(input parsingData)
                   , symbolTables=(init (symbolTables parsingData))
+                  , current_lexeme=lexeme_scan(head (input parsingData))
                 }
 
 insertData :: ParsingData -> ScopeData -> ParsingData
@@ -49,6 +52,7 @@ insertData parsingData scopeData
                   , column=(column parsingData)
                   , input=(input parsingData)
                   , symbolTables=(newTables ++ [SymbolTable { values=newVals }])
+                  , current_lexeme=lexeme_scan(head (input parsingData))
                 }
               where
                 newTables = init (symbolTables parsingData)
