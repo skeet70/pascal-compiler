@@ -3,6 +3,7 @@ module Parser.Helper where
 import Parser.ParsingData
 import Scanner.TokenTable
 import Scanner.ScannerData
+import Data.List
 
 import Debug.Trace
 
@@ -44,6 +45,7 @@ match parsingData = ParsingData {     lookAheadToken=if
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , tagAlong = tagAlong parsingData
                                 }
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
@@ -73,6 +75,7 @@ r_paren_match parsingData
                             else (tail (input parsingData))
                         , symbolTables=(symbolTables parsingData)
                         , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                        , tagAlong = tagAlong parsingData
                     }
     | otherwise
         = syntaxError "MP_RPAREN" parsingData
@@ -105,6 +108,7 @@ l_paren_match parsingData
                             else (tail (input parsingData))
                         , symbolTables=(symbolTables parsingData)
                         , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                        , tagAlong = tagAlong parsingData
                     }
     | otherwise
         = syntaxError "MP_LPAREN" parsingData
@@ -137,6 +141,7 @@ assignment_match parsingData
                             else (tail (input parsingData))
                         , symbolTables=(symbolTables parsingData)
                         , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                        , tagAlong = tagAlong parsingData
                     }
     | otherwise
         = syntaxError "MP_ASSIGN" parsingData
@@ -169,6 +174,7 @@ then_match parsingData
                             else (tail (input parsingData))
                         , symbolTables=(symbolTables parsingData)
                         , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                        , tagAlong = tagAlong parsingData
                     }
     | otherwise
         = syntaxError "MP_THEN" parsingData
@@ -200,6 +206,7 @@ until_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , tagAlong = tagAlong parsingData
                                 }
     | otherwise
         = syntaxError "MP_UNTIL" parsingData
@@ -231,6 +238,7 @@ do_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , tagAlong = tagAlong parsingData
                                 }
     | otherwise
         = syntaxError "MP_DO" parsingData
@@ -262,6 +270,7 @@ semic_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , tagAlong = tagAlong parsingData
                                 }
     | otherwise
         = syntaxError "MP_SCOLON" parsingData
@@ -293,6 +302,7 @@ period_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , tagAlong = tagAlong parsingData
                                 }
     | otherwise
         = syntaxError "MP_PERIOD" parsingData
@@ -324,6 +334,7 @@ colon_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , tagAlong = tagAlong parsingData
                                 }
     | otherwise
         = syntaxError "MP_COLON" parsingData
@@ -355,6 +366,7 @@ end_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , tagAlong = tagAlong parsingData
                                 }
     | otherwise
         = syntaxError "MP_END" parsingData
@@ -386,6 +398,7 @@ ident_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , tagAlong = tagAlong parsingData
                                 }
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
@@ -420,3 +433,61 @@ eof_match parsingData
                                 }
     | otherwise
         = syntaxError "MP_EOF" parsingData
+
+typeInsert :: ParsingData -> [String] -> String -> ParsingData
+typeInsert parsingData listData givenType
+    | checker /= givenType
+        = typeInsert otherNewParseData  newListData givenType
+    | otherwise
+        = insertData newParsingData scopeData
+      where
+        checker = listData!!2
+        scopeData = ScopeData {   name = listData!!1
+                                , kind = listData!!0
+                                , varType = givenType
+                                , offset = length (values (last (symbolTables parsingData)))}
+        newListData = delete (listData!!1) listData
+        newParsingData = ParsingData {    lookAheadToken = lookAheadToken parsingData
+                                        , hasFailed = hasFailed parsingData
+                                        , line = line parsingData
+                                        , column = column parsingData
+                                        , errorString = errorString parsingData
+                                        , input = input parsingData
+                                        , symbolTables = symbolTables parsingData
+                                        , current_lexeme = current_lexeme parsingData
+                                        , tagAlong = [] }
+        otherNewParseData = insertData parsingData scopeData
+
+procedureAndFunctionInsert :: ParsingData -> [String] -> String -> ParsingData
+procedureAndFunctionInsert parsingData listData givenType
+    | checker /= givenType
+        = procedureAndFunctionInsert otherNewParseData  newListData givenType
+    | otherwise
+        = insertData newParsingData scopeData
+      where
+        checker = listData!!1
+        scopeData = ScopeData {   name = listData!!0
+                                , kind = "Parameter"
+                                , varType = givenType
+                                , offset = length (values (last (symbolTables parsingData)))}
+        newListData = delete (listData!!0) listData
+        newParsingData = ParsingData {    lookAheadToken = lookAheadToken parsingData
+                                        , hasFailed = hasFailed parsingData
+                                        , line = line parsingData
+                                        , column = column parsingData
+                                        , errorString = errorString parsingData
+                                        , input = input parsingData
+                                        , symbolTables = symbolTables parsingData
+                                        , current_lexeme = current_lexeme parsingData
+                                        , tagAlong = [] }
+        otherNewParseData = insertData parsingData scopeData
+
+--showTables :: [SymbolTable] -> [SymbolTable]
+--showTables symbolTables
+--    | length symbolTables /= 0
+--        = trace(outputString) showTables symbolTables
+--      where
+--        newVals = values (head symbolTables)
+--        outputString = [name newScope] ++ [kind newScope] ++ [varType newScope] ++ [show $ offset newScope]
+--            where
+--                newScope = head newVals

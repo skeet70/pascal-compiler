@@ -12,6 +12,7 @@
 module Parser.ParsingFunctions where
 
 import Debug.Trace
+import Data.List
 
 import Parser.ParsingData
 import Parser.Helper
@@ -55,7 +56,7 @@ block parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
         = statementPart ( procedureAndFunctionDeclarationPart ( variableDeclarationPart parsingData))
     | otherwise
-        = syntaxError "MP_VAR" parsingData
+        =  syntaxError "MP_VAR" parsingData
 
 -- VariableDeclarationPart ⟶ "var" VariableDeclaration ";" VariableDeclarationTail
 variableDeclarationPart :: ParsingData -> ParsingData
@@ -63,9 +64,19 @@ variableDeclarationPart parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
-        = variableDeclarationTail ( semic_match ( variableDeclaration ( match parsingData)))
+        = variableDeclarationTail ( semic_match ( variableDeclaration ( match newData)))
     | otherwise
         = parsingData
+      where 
+        newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
 
 -- VariableDeclarationTail ⟶ VariableDeclaration ";" VariableDeclarationTail
 --                         ⟶ ε
@@ -96,15 +107,42 @@ typeParser parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT"]
-        = insertData parsingData scopeData
-      where 
-        scopeData = ScopeData { name = current_lexeme parsingData
-                               ,kind = "MP_VAR"
-                               ,varType = unwrapToken (lookAheadToken parsingData)
-                               ,offset = length (symbolTables parsingData)
-                              }
+        = match (typeInsert newData newList newType)
     | otherwise
         = syntaxError "MP_INTEGER, MP_FLOAT, MP_BOOLEAN, MP_STRING_LIT" parsingData
+      where 
+        newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
+        newList = tagAlong newData
+        newType = unwrapToken (lookAheadToken parsingData)
+
+typeParserForProcedureAndFunction :: ParsingData -> ParsingData
+typeParserForProcedureAndFunction parsingData
+    | hasFailed parsingData == True
+        = parsingData
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT"]
+        = match (procedureAndFunctionInsert (create newData) newList newType)
+    | otherwise
+        = syntaxError "MP_INTEGER, MP_FLOAT, MP_BOOLEAN, MP_STRING_LIT" parsingData
+      where 
+        newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
+        newList = tagAlong newData
+        newType = unwrapToken (lookAheadToken parsingData)
 
 -- ProcedureAndFunctionDeclarationPart ⟶ ProcedureDeclaration ProcedureAndFunctionDeclarationPart
 --                                     ⟶ FunctionDeclaration ProcedureAndFunctionDeclarationPart
@@ -114,11 +152,21 @@ procedureAndFunctionDeclarationPart parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROCEDURE"
-        = procedureAndFunctionDeclarationPart ( procedureDeclaration parsingData)
+        = procedureAndFunctionDeclarationPart ( procedureDeclaration newData)
     | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
-        = procedureAndFunctionDeclarationPart ( functionDeclaration parsingData)
+        = procedureAndFunctionDeclarationPart ( functionDeclaration newData)
     | otherwise
         = parsingData
+      where 
+        newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
 
 -- ProcedureDeclaration ⟶ ProcedureHeading ";" Block ";"
 procedureDeclaration :: ParsingData -> ParsingData
@@ -136,7 +184,7 @@ functionDeclaration parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
-        = semic_match ( block ( semic_match ( functionHeading parsingData)))
+        = create (semic_match ( block ( semic_match ( functionHeading parsingData))))
     | otherwise
         = syntaxError "MP_FUNCTION" parsingData
 
@@ -156,9 +204,19 @@ functionHeading parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
-        = typeParser ( colon_match ( optionalFormalParameterList ( functionIdentifier ( match parsingData))))
+        = typeParser ( colon_match ( optionalFormalParameterList ( functionIdentifier ( match newData))))
     | otherwise
         = syntaxError "MP_FUNCTION" parsingData
+      where 
+        newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData]}
 
 -- OptionalFormalParameterList ⟶ "(" FormalParameterSection FormalParameterSectionTail ")"
 --                             ⟶ ε
@@ -201,7 +259,7 @@ valueParameterSection parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = typeParser ( colon_match ( identifierList parsingData))
+        = typeParserForProcedureAndFunction ( colon_match ( identifierList parsingData))
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
 
@@ -211,9 +269,19 @@ variableParameterSection parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
-        = typeParser ( colon_match ( identifierList ( match parsingData)))
+        = typeParser ( colon_match ( identifierList ( match newData)))
     | otherwise
         = syntaxError "MP_VAR" parsingData
+      where 
+        newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
 
 -- StatementPart ⟶ CompoundStatement
 statementPart :: ParsingData -> ParsingData
@@ -231,7 +299,7 @@ compoundStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
-        = end_match ( statementSequence ( match parsingData))
+        = destroy (end_match ( statementSequence ( match parsingData)))
     | otherwise
         = syntaxError "MP_BEGIN" parsingData
 
@@ -433,19 +501,44 @@ procedureIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = match parsingData
+        = match (insertData (create newData) scopeData)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
+      where 
+        newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , tagAlong = [] }
+        newName = current_lexeme parsingData
+        scopeData = ScopeData {   name = newName
+                                , kind = "MP_PROCEDURE"
+                                , varType = "MP_PROCEDURE"
+                                , offset = length (values (last (symbolTables parsingData)))}
 
 -- FunctionIdentifier      ⟶ Identifier
 functionIdentifier :: ParsingData -> ParsingData
 functionIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
-    | unwrapToken (lookAheadToken parsingData) ==  "MP_IDENTIFIER"
+    | unwrapToken (lookAheadToken newData) ==  "MP_IDENTIFIER"
         = match parsingData
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
+      where 
+        newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , tagAlong = tagAlong parsingData ++ [current_lexeme parsingData]}
 
 -- BooleanExpression       ⟶ Expression
 booleanExpression :: ParsingData -> ParsingData
@@ -481,9 +574,19 @@ identifierList parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) =="MP_IDENTIFIER"
-        = identifierTail (match parsingData)
+        = identifierTail (match newData)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
+      where 
+        newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , tagAlong = tagAlong parsingData ++ [current_lexeme parsingData] }
 
 -- IdentifierTail          ⟶ "," Identifier IdentifierTail
 --                         ⟶ ε
@@ -492,7 +595,7 @@ identifierTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_COMMA"
-        = identifierList (ident_match (match parsingData))
+        = identifierList (match parsingData)
     | otherwise
         = parsingData -- empty string allowed
 

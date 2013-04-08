@@ -48,12 +48,13 @@ scanFile (source, lexeme, token_in, column_in, line_in) parsingData
                         , input=input parsingData ++ [scannerData]
                         , symbolTables=[]
                         , current_lexeme=lexeme_scan scannerData
+                        , tagAlong = []
                     }
     | otherwise
         = scanFile (getToken (source, "", column_in, line_in)) newParsing
       where
         scannerData = convertToScannerData (source, lexeme, token_in, column_in, line_in)
-        newParsing = ParsingData {hasFailed=False, input=input parsingData ++ [scannerData], symbolTables=[], current_lexeme = lexeme_scan scannerData}
+        newParsing = ParsingData {hasFailed=False, input=input parsingData ++ [scannerData], symbolTables=[], current_lexeme = lexeme_scan scannerData, tagAlong = []}
 
 parse :: ParsingData -> IO()
 parse parsingData
