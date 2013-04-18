@@ -3,8 +3,6 @@ module Parser.ParsingData where
 import Scanner.TokenTable
 import Scanner.ScannerData
 
-import Debug.Trace
-
 data ParsingData = ParsingData {  lookAheadToken :: Token
                                 , hasFailed :: Bool
                                 , line :: Int
@@ -14,6 +12,7 @@ data ParsingData = ParsingData {  lookAheadToken :: Token
                                 , symbolTables :: [SymbolTable]
                                 , current_lexeme :: String
                                 , tagAlong :: [String]
+                                , intermediateCode :: [String]
                                 } deriving (Show)
 
 data SymbolTable = SymbolTable {  values :: [ScopeData] } deriving (Show)
@@ -25,8 +24,9 @@ data ScopeData = ScopeData {  name :: String
                             , offset :: Int
                             } deriving (Show)
 
-create :: ParsingData -> ParsingData
-create parsingData
+
+createSymbolTable :: ParsingData -> ParsingData
+createSymbolTable parsingData
     = ParsingData { lookAheadToken=(lookAheadToken parsingData)
                   , hasFailed=(hasFailed parsingData)
                   , line=(line parsingData)
@@ -37,8 +37,8 @@ create parsingData
                   , tagAlong = tagAlong parsingData
                 }
 
-destroy :: ParsingData -> ParsingData
-destroy parsingData
+destroySymbolTable :: ParsingData -> ParsingData
+destroySymbolTable parsingData
     = ParsingData { lookAheadToken=(lookAheadToken parsingData)
                   , hasFailed=(hasFailed parsingData)
                   , line=(line parsingData)
@@ -81,4 +81,8 @@ addData parsingData scopeData
                 endScopeData = last (values (last (symbolTables parsingData)))
                 newVals = init (values (last (symbolTables parsingData))) ++ [newScope]
                   where
-                    newScope = ScopeData  {name = name scopeData, kind = kind scopeData, varType = varType scopeData, attribute = attribute scopeData, offset = offset endScopeData} 
+                    newScope = ScopeData  {name = name scopeData, 
+                                           kind = kind scopeData, 
+                                           varType = varType scopeData, 
+                                           attribute = attribute scopeData, 
+                                           offset = offset endScopeData} 

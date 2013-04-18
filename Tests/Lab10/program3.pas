@@ -1,0 +1,49 @@
+MOV SP D0
+ADD #3 SP SP
+PUSH #"Enter an integer for A: "
+WRTS
+RD 0(D0)
+PUSH #"A = "
+WRTS
+WRTLN 0(D0)
+PUSH #"Enter a float for B: "
+WRTS
+RDF 1(D0)
+PUSH #"B = "
+WRTS
+WRTLN 1(D0)
+PUSH #"Enter an integer for C: "
+WRTS
+RD 2(D0)
+PUSH #"C = "
+WRTS
+WRTLN 2(D0)
+PUSH 0(D0)
+PUSH 0(D0)
+PUSH 0(D0)
+PUSH #3
+MULS
+MULS
+MULS
+CASTSF
+PUSH 1(D0)
+PUSH 1(D0)
+PUSH #5.0
+MULSF
+MULSF
+PUSH 2(D0)
+CASTSF
+SUBSF
+ADDSF
+POP 0(D0)
+PUSH #"A = "
+WRTS
+WRT 0(D0)
+PUSH #"B = "
+WRTS
+WRT 1(D0)
+PUSH #" and C = "
+WRTS
+WRT 2(D0)
+MOV D0 SP
+HLT

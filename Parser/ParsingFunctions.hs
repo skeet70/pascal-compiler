@@ -34,7 +34,7 @@ program parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROGRAM"
-        = create(period_match (block (semic_match (programHeading parsingData))))
+        = createSymbolTable(period_match (block (semic_match (programHeading parsingData))))
     | otherwise
         = syntaxError "MP_PROGRAM" parsingData
 
@@ -128,7 +128,7 @@ typeParserForProcedureAndFunction parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT"]
-        = match (procedureAndFunctionInsert (create newData) newList newType)
+        = match (procedureAndFunctionInsert (createSymbolTable newData) newList newType)
     | otherwise
         = syntaxError "MP_INTEGER, MP_FLOAT, MP_BOOLEAN, MP_STRING_LIT" parsingData
       where 
@@ -174,7 +174,7 @@ procedureDeclaration parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROCEDURE"
-        = create (semic_match ( block ( semic_match ( procedureHeading parsingData))))
+        = createSymbolTable (semic_match ( block ( semic_match ( procedureHeading parsingData))))
     | otherwise
         = syntaxError "MP_PROCEDURE" parsingData
 
@@ -184,7 +184,7 @@ functionDeclaration parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
-        = create (semic_match ( block ( semic_match ( functionHeading parsingData))))
+        = createSymbolTable (semic_match ( block ( semic_match ( functionHeading parsingData))))
     | otherwise
         = syntaxError "MP_FUNCTION" parsingData
 
@@ -299,7 +299,7 @@ compoundStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
-        = destroy (end_match ( statementSequence ( match parsingData)))
+        = destroySymbolTable (end_match ( statementSequence ( match parsingData)))
     | otherwise
         = syntaxError "MP_BEGIN" parsingData
 
@@ -501,7 +501,7 @@ procedureIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = match (insertData (create newData) scopeData)
+        = match (insertData (createSymbolTable newData) scopeData)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
       where 
