@@ -16,6 +16,7 @@ import Data.List
 
 import Parser.ParsingData
 import Parser.Helper
+import IntermediateCode.IRFunctions
 import Scanner.TokenTable
 
 -- SystemGoal ⟶ Program eof
@@ -721,10 +722,11 @@ assignmentStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = generatePopDestination (expression (assignment_match (functionIdentifier parsingData))) destination 
-            $ let destination = searchSymbolTables parsingData (current_lexeme parsingData) --Generate code to store A in (A := 1), with current_lexeme
+        = generatePopDestination (expression (assignment_match (functionIdentifier parsingData))) destination
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
+    where
+        destination = searchSymbolTables parsingData (current_lexeme parsingData)
 
 --IfStatement ⟶ "if" BooleanExpression "then" Statement OptionalElsePart
 ifStatement :: ParsingData -> ParsingData
