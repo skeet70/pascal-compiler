@@ -67,7 +67,7 @@ variableDeclarationPart parsingData
         = variableDeclarationTail ( semic_match ( variableDeclaration ( match newData)))
     | otherwise
         = parsingData
-      where 
+      where
         newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
                                     , line = line parsingData
@@ -110,7 +110,7 @@ typeParser parsingData
         = match (typeInsert newData newList newType)
     | otherwise
         = syntaxError "MP_INTEGER, MP_FLOAT, MP_BOOLEAN, MP_STRING_LIT" parsingData
-      where 
+      where
         newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
                                     , line = line parsingData
@@ -131,7 +131,7 @@ typeParserForProcedureAndFunction parsingData
         = match (procedureAndFunctionInsert (createSymbolTable newData) newList newType)
     | otherwise
         = syntaxError "MP_INTEGER, MP_FLOAT, MP_BOOLEAN, MP_STRING_LIT" parsingData
-      where 
+      where
         newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
                                     , line = line parsingData
@@ -157,7 +157,7 @@ procedureAndFunctionDeclarationPart parsingData
         = procedureAndFunctionDeclarationPart ( functionDeclaration newData)
     | otherwise
         = parsingData
-      where 
+      where
         newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
                                     , line = line parsingData
@@ -207,7 +207,7 @@ functionHeading parsingData
         = typeParser ( colon_match ( optionalFormalParameterList ( functionIdentifier ( match newData))))
     | otherwise
         = syntaxError "MP_FUNCTION" parsingData
-      where 
+      where
         newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
                                     , line = line parsingData
