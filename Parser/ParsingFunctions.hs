@@ -721,7 +721,8 @@ assignmentStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = expression (assignment_match (functionIdentifier parsingData))
+        = generatePopDestination (expression (assignment_match (functionIdentifier parsingData))) destination 
+            $ let destination = searchSymbolTables parsingData (current_lexeme parsingData) --Generate code to store A in (A := 1), with current_lexeme
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
 

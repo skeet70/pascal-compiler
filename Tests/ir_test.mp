@@ -1,5 +1,6 @@
 program Program1;
-  var A : integer;
+  var A, B : integer;
     begin
       A := 1;
+      B := 2;
     end.
