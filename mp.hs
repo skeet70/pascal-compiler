@@ -29,26 +29,28 @@ driver = do
     (filename:_) <- getArgs
     source <- readFile filename
     if ((dropWhile (/= '.') filename) == ".mp")
-    then parse (scanFile (getToken (source, lexeme, column, line)) parsingData)
+    then do parse (scanFile (getToken (source, lexeme, column, line)) parsingData)
+            printIRCodeToFile parsingData
     --then extractData $ getToken (source, lexeme, column, line)
     else putStrLn "Please insert a valid file."
       where
         lexeme = ""
         column = 1
         line = 1
-        parsingData = ParsingData {hasFailed=False, input=[], symbolTables=[]}
+        parsingData = ParsingData {hasFailed=False, input=[], symbolTables=[], intermediateCode=[]}
 
 scanFile :: (String, String, Token, Int, Int) -> ParsingData -> ParsingData
 scanFile (source, lexeme, token_in, column_in, line_in) parsingData
     | token_in == EndOfFile MP_EOF
         = ParsingData {   hasFailed=False
-                        , lookAheadToken=if null (input parsingData) then Symbol MP_SCOLON else token (head (input parsingData))
                         , line=if null (input parsingData) then 0 else line_scan (head (input parsingData))
                         , column=if null (input parsingData) then 0 else column_scan (head (input parsingData))
+                        , lookAheadToken=if null (input parsingData) then Symbol MP_SCOLON else token (head (input parsingData))
                         , input=input parsingData ++ [scannerData]
                         , symbolTables=[]
                         , current_lexeme=lexeme_scan scannerData
                         , tagAlong = []
+                        , intermediateCode = []
                     }
     | otherwise
         = scanFile (getToken (source, "", column_in, line_in)) newParsing
@@ -86,3 +88,10 @@ extractData (source, lexeme, token, column, line) = do
 
 inputError :: IOError -> IO ()
 inputError e = putStrLn "Please insert a valid file."
+
+printIRCodeToFile :: ParsingData -> IO ()
+printIRCodeToFile parsingData 
+    = do
+        outh <- openFile "output.pas" WriteMode
+        hPrint outh (unlines (intermediateCode parsingData))
+        hClose outh

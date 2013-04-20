@@ -684,6 +684,7 @@ readParameter parsingData
         = syntaxError "MP_IDENTIFIER" parsingData
 
 --WriteStatement ⟶ "write" "(" WriteParameter WriteParameterTail ")"
+--Generate IR Code for a Write Statement
 writeStatement :: ParsingData -> ParsingData
 writeStatement parsingData
     | hasFailed parsingData == True
