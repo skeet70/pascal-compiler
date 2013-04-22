@@ -19,5 +19,5 @@ generatePopDestination parsingData scopeData = ParsingData {
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData 
                                     , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["POP " ++ "(D" ++ (show (level scopeData)) ++ ")"] 
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"] 
                                     , tagAlong = tagAlong parsingData }
