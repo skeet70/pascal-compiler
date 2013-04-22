@@ -45,6 +45,7 @@ match parsingData = ParsingData {     lookAheadToken=if
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData
                                 }
 
@@ -75,6 +76,7 @@ r_paren_match parsingData
                             else (tail (input parsingData))
                         , symbolTables=(symbolTables parsingData)
                         , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                        , intermediateCode = intermediateCode parsingData
                         , tagAlong = tagAlong parsingData
                     }
     | otherwise
@@ -108,6 +110,7 @@ l_paren_match parsingData
                             else (tail (input parsingData))
                         , symbolTables=(symbolTables parsingData)
                         , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                        , intermediateCode = intermediateCode parsingData
                         , tagAlong = tagAlong parsingData
                     }
     | otherwise
@@ -141,6 +144,7 @@ assignment_match parsingData
                             else (tail (input parsingData))
                         , symbolTables=(symbolTables parsingData)
                         , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                        , intermediateCode = intermediateCode parsingData
                         , tagAlong = tagAlong parsingData
                     }
     | otherwise
@@ -174,6 +178,7 @@ then_match parsingData
                             else (tail (input parsingData))
                         , symbolTables=(symbolTables parsingData)
                         , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                        , intermediateCode = intermediateCode parsingData
                         , tagAlong = tagAlong parsingData
                     }
     | otherwise
@@ -206,6 +211,7 @@ until_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData
                                 }
     | otherwise
@@ -238,6 +244,7 @@ do_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData
                                 }
     | otherwise
@@ -270,6 +277,7 @@ semic_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData
                                 }
     | otherwise
@@ -302,6 +310,7 @@ period_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData
                                 }
     | otherwise
@@ -334,6 +343,7 @@ colon_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData
                                 }
     | otherwise
@@ -366,6 +376,7 @@ end_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData
                                 }
     | otherwise
@@ -398,6 +409,7 @@ ident_match parsingData
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
                                     , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData
                                 }
     | otherwise
@@ -429,7 +441,7 @@ eof_match parsingData
                                         then []
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
-                                    , errorString="Parse complete, stop poking me!"
+                                    , errorString=";Parse complete, stop poking me!"
                                 }
     | otherwise
         = syntaxError "MP_EOF" parsingData
@@ -455,6 +467,7 @@ typeInsert parsingData listData givenType
                                         , input = input parsingData
                                         , symbolTables = symbolTables parsingData
                                         , current_lexeme = current_lexeme parsingData
+                                        , intermediateCode = intermediateCode parsingData
                                         , tagAlong = [] }
         otherNewParseData = insertData parsingData scopeData
 
@@ -479,6 +492,7 @@ procedureAndFunctionInsert parsingData listData givenType
                                         , input = input parsingData
                                         , symbolTables = symbolTables parsingData
                                         , current_lexeme = current_lexeme parsingData
+                                        , intermediateCode = intermediateCode parsingData
                                         , tagAlong = [] }
         otherNewParseData = insertData parsingData scopeData
 

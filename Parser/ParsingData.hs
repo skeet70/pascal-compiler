@@ -48,6 +48,7 @@ destroySymbolTable parsingData
                   , input=(input parsingData)
                   , symbolTables=(init (symbolTables parsingData))
                   , current_lexeme=lexeme_scan(head (input parsingData))
+                  , intermediateCode = intermediateCode parsingData
                   , tagAlong = tagAlong parsingData
                 }
 
@@ -71,6 +72,7 @@ searchSymbolTables parsingData lexeme
                                      , input=(input parsingData)
                                      , symbolTables=init (symbolTables parsingData)
                                      , current_lexeme=(current_lexeme parsingData)
+                                     , intermediateCode = intermediateCode parsingData
                                      , tagAlong = tagAlong parsingData
                                 }
 
@@ -104,6 +106,7 @@ insertData parsingData scopeData
                   , input=(input parsingData)
                   , symbolTables=(newTables ++ [SymbolTable { values=newVals }])
                   , current_lexeme=lexeme_scan(head (input parsingData))
+                  , intermediateCode = intermediateCode parsingData
                   , tagAlong = tagAlong parsingData
                 }
               where

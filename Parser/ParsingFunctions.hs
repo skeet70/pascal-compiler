@@ -77,6 +77,7 @@ variableDeclarationPart parsingData
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
 
 -- VariableDeclarationTail ⟶ VariableDeclaration ";" VariableDeclarationTail
@@ -120,6 +121,7 @@ typeParser parsingData
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
         newList = tagAlong newData
         newType = unwrapToken (lookAheadToken parsingData)
@@ -141,6 +143,7 @@ typeParserForProcedureAndFunction parsingData
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
         newList = tagAlong newData
         newType = unwrapToken (lookAheadToken parsingData)
@@ -167,6 +170,7 @@ procedureAndFunctionDeclarationPart parsingData
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
 
 -- ProcedureDeclaration ⟶ ProcedureHeading ";" Block ";"
@@ -217,6 +221,7 @@ functionHeading parsingData
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData]}
 
 -- OptionalFormalParameterList ⟶ "(" FormalParameterSection FormalParameterSectionTail ")"
@@ -282,6 +287,7 @@ variableParameterSection parsingData
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
 
 -- StatementPart ⟶ CompoundStatement
@@ -514,6 +520,7 @@ procedureIdentifier parsingData
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = [] }
         newName = current_lexeme parsingData
         scopeData = ScopeData {   name = newName
@@ -539,6 +546,7 @@ functionIdentifier parsingData
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData ++ [current_lexeme parsingData]}
 
 -- BooleanExpression       ⟶ Expression
@@ -587,6 +595,7 @@ identifierList parsingData
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = intermediateCode parsingData
                                     , tagAlong = tagAlong parsingData ++ [current_lexeme parsingData] }
 
 -- IdentifierTail          ⟶ "," Identifier IdentifierTail

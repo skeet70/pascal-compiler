@@ -6,6 +6,7 @@
 
 module IntermediateCode.IRFunctions where
 
+import Debug.Trace
 import Parser.ParsingData
 
 generatePopDestination :: ParsingData -> ScopeData -> ParsingData
@@ -19,5 +20,5 @@ generatePopDestination parsingData scopeData = newData
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData 
                                     , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = intermediateCode parsingData ++ ["POP " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"] 
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["POP " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"] 
                                     , tagAlong = tagAlong parsingData }
