@@ -367,7 +367,7 @@ optionalRelationalPart parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_EQUALS", "MP_LTHAN", "MP_GTHAN", "MP_LEQUAL", "MP_GTHAN", "MP_NEQUAL"]
-        = simpleExpression (relationalOperator parsingData)
+        = simpleExpression (relationalOperator parsingData) --use relationalOperator from list after simpleExpression
     | otherwise
         = parsingData -- empty string allowed
 
@@ -382,7 +382,7 @@ relationalOperator parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_EQUALS", "MP_LTHAN", "MP_GTHAN", "MP_LEQUAL", "MP_GEQUAL", "MP_NEQUAL"]
-        = match parsingData
+        = match parsingData -- hold relationalOperator in list for use in optionalRelationalPart
     | otherwise
         = syntaxError "MP_EQUALS, MP_LTHAN, MP_GTHAN, MP_LEQUAL, MP_GEQUAL, or MP_NEQUAL" parsingData
 
@@ -419,7 +419,7 @@ optionalSign parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS"]
-        = match parsingData
+        = match parsingData --add +/-1 to stack for numbers then MULS after id is put on stack
     | otherwise
         = parsingData --empty string allowed
 
@@ -431,7 +431,7 @@ addingOperator parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_OR"]
-        = match parsingData
+        = match parsingData --hold operator in list and then call function
     | otherwise
         = syntaxError "MP_PLUS, MP_MINUS, or MP_OR" parsingData
 
@@ -456,7 +456,7 @@ factorTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_TIMES", "MP_DIV", "MP_MOD", "MP_AND"]
-        = factorTail (factor (multiplyingOperator parsingData))
+        = factorTail (generateStackModyfierInteger (factor (multiplyingOperator parsingData))) --muls/divs/etc after factor, before factorTail
     | otherwise
         = parsingData -- empty string allowed
 
@@ -469,7 +469,7 @@ multiplyingOperator parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_TIMES", "MP_DIV", "MP_MOD", "MP_AND"]
-        = match parsingData
+        = match parsingData --add to list of functions
     | otherwise
         = syntaxError "MP_TIMES, MP_DIV, MP_MOD, or MP_AND" parsingData
 
@@ -484,9 +484,9 @@ factor parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_IDENTIFIER"
         = optionalActualParameterList (functionIdentifier parsingData)
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT", "MP_FIXED_LIT", "MP_FLOAT_LIT", "MP_STRING_LIT"]
-        = match parsingData
+        = match (generatePushLiterals parsingData) --insert push actual integer_lit etc. DONE
     | unwrapToken (lookAheadToken parsingData) == "MP_NOT"
-        = factor (match parsingData)
+        = factor (match parsingData) -- add not boolean to list of functions / or apply not function after factor call
     | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN"
         = r_paren_match (expression (match parsingData))
     | otherwise
@@ -534,7 +534,8 @@ functionIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken newData) ==  "MP_IDENTIFIER"
-        = match parsingData
+        = let destination = searchSymbolTables newData (current_lexeme newData) 
+          in match (generatePushIdentifier newData destination) -- search for and push identifier here. DONE
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
       where 
@@ -575,7 +576,7 @@ ordinalExpression parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
         = expression parsingData
     | otherwise
-        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN"parsingData
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN" parsingData
 
 -- IdentifierList          ⟶ Identifier IdentifierTail
 identifierList :: ParsingData -> ParsingData
@@ -667,7 +668,7 @@ readStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_READ"
-        = r_paren_match (readParameterTail (readParameter (l_paren_match (match parsingData))))
+        = r_paren_match (readParameterTail (readParameter (l_paren_match (match parsingData)))) --call read function after readParameter
     | otherwise
         = syntaxError "MP_READ" parsingData
 
@@ -699,7 +700,7 @@ writeStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_WRITE", "MP_WRITELN"]
-        = r_paren_match (writeParameterTail (writeParameter (l_paren_match (match parsingData))))
+        = r_paren_match (writeParameterTail (writeParameter (l_paren_match (match parsingData)))) --call write function after writeParameter
     | unwrapToken (lookAheadToken parsingData) == "MP_FSLASH"
         = match parsingData
     | otherwise
@@ -744,7 +745,7 @@ ifStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IF"
-        = optionalElsePart (statement (then_match (booleanExpression (match parsingData))))
+        = optionalElsePart (statement (then_match (booleanExpression (match parsingData)))) --start of conditional function
     | otherwise
         = syntaxError "MP_IF" parsingData
 
@@ -869,7 +870,11 @@ actualParameter :: ParsingData -> ParsingData
 actualParameter parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS"]
+    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
+        = ordinalExpression parsingData
+    | getTokenType (lookAheadToken parsingData) ==  "IdentifierOrLiteral"
+        = ordinalExpression parsingData
+    | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
         = ordinalExpression parsingData
     | otherwise
         = syntaxError "MP_PLUS or MP_MINUS" parsingData
