@@ -732,7 +732,7 @@ assignmentStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = generatePopDestination (expression (assignment_match (functionIdentifier parsingData))) destination
+        = generatePopDestination (expression (assignment_match (functionIdentifier parsingData))) $! destination
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
     where
