@@ -83,12 +83,12 @@ packParsingData :: ScannerData -> ParsingData -> ParsingData
 packParsingData scannerData parsingData
     = parsingData
 
-extractData :: (String, String, Token, Int, Int) -> IO ()
-extractData (source, lexeme, token, column, line) = do
-    putStrLn (unwrapToken token ++ " " ++ show line ++ " " ++ show column ++ " " ++ lexeme)
-    if token == EndOfFile MP_EOF
-    then putStrLn "Done Scanning."
-    else extractData $ getToken (source, "", column, line)
+--extractData :: (String, String, Token, Int, Int) -> IO ()
+--extractData (source, lexeme, token, column, line) = do
+--    putStrLn (unwrapToken token ++ " " ++ show line ++ " " ++ show column ++ " " ++ lexeme)
+--    if token == EndOfFile MP_EOF
+--    then putStrLn "Done Scanning."
+--    else extractData $ getToken (source, "", column, line)
 
 inputError :: IOError -> IO ()
 inputError e = putStrLn "Please insert a valid file."
