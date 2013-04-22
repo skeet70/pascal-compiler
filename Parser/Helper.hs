@@ -441,6 +441,7 @@ eof_match parsingData
                                         then []
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
+                                    , intermediateCode = intermediateCode parsingData
                                     , errorString=";Parse complete, stop poking me!"
                                 }
     | otherwise

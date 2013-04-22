@@ -35,6 +35,7 @@ createSymbolTable parsingData
                   , input=(input parsingData)
                   , symbolTables=(symbolTables parsingData ++ [SymbolTable { values=[] }])
                   , current_lexeme=lexeme_scan(head (input parsingData))
+                  , intermediateCode = intermediateCode parsingData
                   , tagAlong = tagAlong parsingData
                 }
 
