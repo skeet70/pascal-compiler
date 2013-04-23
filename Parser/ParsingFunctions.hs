@@ -407,9 +407,11 @@ termTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_OR"]
-        = termTail (term (addingOperator parsingData))
+        = termTail (generateStackModifierInteger (term (addingOperator parsingData)) $! operator)
     | otherwise
         = parsingData -- empty string allowed
+      where
+        operator = unwrapToken (lookAheadToken parsingData)
 
 -- OptionalSign            ⟶ "+"
 --                         ⟶ "-"
@@ -456,9 +458,11 @@ factorTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_TIMES", "MP_DIV", "MP_MOD", "MP_AND"]
-        = factorTail (generateStackModifierInteger (factor (multiplyingOperator parsingData))) --muls/divs/etc after factor, before factorTail
+        = factorTail (generateStackModifierInteger (factor (multiplyingOperator parsingData)) $! operator) --muls/divs/etc after factor, before factorTail
     | otherwise
         = parsingData -- empty string allowed
+      where
+        operator = unwrapToken (lookAheadToken parsingData)
 
 -- MultiplyingOperator     ⟶ "*"
 --                         ⟶ "div"
@@ -509,7 +513,7 @@ procedureIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = match (insertData (createSymbolTable newData) scopeData)
+        = match (insertData newData scopeData)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
       where 
@@ -690,9 +694,11 @@ readParameter parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = functionIdentifier parsingData
+        = functionIdentifier (generateReadFunction parsingData destination)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
+    where
+        destination = searchSymbolTables parsingData (current_lexeme parsingData)
 
 --WriteStatement ⟶ "write" "(" WriteParameter WriteParameterTail ")"
 --Generate IR Code for a Write Statement
@@ -723,10 +729,14 @@ writeParameter :: ParsingData -> ParsingData
 writeParameter parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (== unwrapToken (lookAheadToken parsingData)) ["MP_PLUS", "MP_MINUS"]
-        = ordinalExpression parsingData
+    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
+        = generateWriteFunction(ordinalExpression parsingData)
+    | getTokenType (lookAheadToken parsingData) ==  "IdentifierOrLiteral"
+        = generateWriteFunction(ordinalExpression parsingData)
+    | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
+        = generateWriteFunction(ordinalExpression parsingData)
     | otherwise
-        = syntaxError "MP_PLUS or MP_MINUS" parsingData
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN" parsingData
 
 --AssignmentStatement ⟶ FunctionIdentifier ":=" Expression
 assignmentStatement :: ParsingData -> ParsingData
@@ -734,11 +744,11 @@ assignmentStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = (generatePopDestination (expression (assignment_match (functionIdentifier parsingData))) $! dest)
+        = (generatePopDestination (expression (assignment_match (functionIdentifier parsingData))) $! destination)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
     where
-        dest = trace(show (symbolTables parsingData)) trace("hello") searchSymbolTables parsingData (current_lexeme parsingData)
+        destination = searchSymbolTables parsingData (current_lexeme parsingData)
 
 --IfStatement ⟶ "if" BooleanExpression "then" Statement OptionalElsePart
 ifStatement :: ParsingData -> ParsingData
@@ -806,10 +816,14 @@ initialValue :: ParsingData -> ParsingData
 initialValue parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (== unwrapToken (lookAheadToken parsingData)) ["MP_PLUS", "MP_MINUS"]
+    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
+        = ordinalExpression parsingData
+    | getTokenType (lookAheadToken parsingData) ==  "IdentifierOrLiteral"
+        = ordinalExpression parsingData
+    | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
         = ordinalExpression parsingData
     | otherwise
-        = syntaxError "MP_PLUS or MP_MINUS" parsingData
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN" parsingData
 
 --StepValue ⟶ "to"
 --          ⟶ "downto"
@@ -829,10 +843,14 @@ finalValue :: ParsingData -> ParsingData
 finalValue parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS"]
+    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
+        = ordinalExpression parsingData
+    | getTokenType (lookAheadToken parsingData) ==  "IdentifierOrLiteral"
+        = ordinalExpression parsingData
+    | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
         = ordinalExpression parsingData
     | otherwise
-        = syntaxError "MP_PLUS or MP_MINUS" parsingData
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN" parsingData
 
 --ProcedureStatement ⟶ ProcedureIdentifier OptionalActualParameterList
 procedureStatement :: ParsingData -> ParsingData
@@ -878,4 +896,4 @@ actualParameter parsingData
     | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
         = ordinalExpression parsingData
     | otherwise
-        = syntaxError "MP_PLUS or MP_MINUS" parsingData
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN" parsingData

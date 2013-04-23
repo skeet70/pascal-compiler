@@ -50,10 +50,36 @@ generatePushIdentifier parsingData scopeData = ParsingData {
                                     , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"] 
                                     , tagAlong = tagAlong parsingData }
 
+generateReadFunction :: ParsingData -> ScopeData -> ParsingData
+generateReadFunction parsingData scopeData = ParsingData {   
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData 
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["RD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"] 
+                                    , tagAlong = tagAlong parsingData }
+
+generateWriteFunction :: ParsingData -> ParsingData
+generateWriteFunction parsingData = ParsingData {   
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData 
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["WRTS"] 
+                                    , tagAlong = tagAlong parsingData }
+
 --Need to determine if integer or float before doing it.
-generateStackModifierInteger :: ParsingData -> ParsingData
-generateStackModifierInteger parsingData 
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_PLUS"
+generateStackModifierInteger :: ParsingData -> String -> ParsingData
+generateStackModifierInteger parsingData operator
+      | operator ==  "MP_PLUS"
             = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -65,7 +91,7 @@ generateStackModifierInteger parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["ADDS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_MINUS"
+      | operator ==  "MP_MINUS"
             = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -77,7 +103,7 @@ generateStackModifierInteger parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["SUBS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_TIMES"
+      | operator ==  "MP_TIMES"
             = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -89,7 +115,7 @@ generateStackModifierInteger parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["MULS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_DIV"
+      | operator ==  "MP_DIV"
             = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -101,7 +127,7 @@ generateStackModifierInteger parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["DIVS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_MOD"
+      | operator ==  "MP_MOD"
             = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -113,7 +139,7 @@ generateStackModifierInteger parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["MODS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_AND"
+      | operator ==  "MP_AND"
             = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -125,7 +151,7 @@ generateStackModifierInteger parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["ANDS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_OR"
+      | operator ==  "MP_OR"
             = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -137,7 +163,7 @@ generateStackModifierInteger parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["ORS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_NOT"
+      | operator ==  "MP_NOT"
             = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
