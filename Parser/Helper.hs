@@ -18,6 +18,7 @@ syntaxError errorList parsingData = ParsingData {   lookAheadToken=(lookAheadTok
                                         , input=(input parsingData)
                                         , symbolTables=(symbolTables parsingData)
                                         , errorString="Expected " ++ errorList ++ " but found " ++ unwrapToken (lookAheadToken parsingData)
+                                        , intermediateCode = intermediateCode parsingData
                                     }
 
 -- Generic called whenever a terminal is encountered. Gets the next token from
@@ -458,7 +459,8 @@ typeInsert parsingData listData givenType
         scopeData = ScopeData {   name = listData!!1
                                 , kind = listData!!0
                                 , varType = givenType
-                                , offset = length (values (last (symbolTables parsingData)))}
+                                , offset = length (values (last (symbolTables parsingData)))
+                                , level = 0}
         newListData = delete (listData!!1) listData
         newParsingData = ParsingData {    lookAheadToken = lookAheadToken parsingData
                                         , hasFailed = hasFailed parsingData
@@ -483,7 +485,8 @@ procedureAndFunctionInsert parsingData listData givenType
         scopeData = ScopeData {   name = listData!!0
                                 , kind = "Parameter"
                                 , varType = givenType
-                                , offset = length (values (last (symbolTables parsingData)))}
+                                , offset = length (values (last (symbolTables parsingData)))
+                                , level = 0}
         newListData = delete (listData!!0) listData
         newParsingData = ParsingData {    lookAheadToken = lookAheadToken parsingData
                                         , hasFailed = hasFailed parsingData

@@ -2,6 +2,7 @@ module Parser.ParsingData where
 
 import Scanner.TokenTable
 import Scanner.ScannerData
+import Debug.Trace
 
 data ParsingData = ParsingData {  lookAheadToken :: Token
                                 , hasFailed :: Bool
@@ -58,7 +59,7 @@ destroySymbolTable parsingData
 -- ScopeData with kind = None.
 searchSymbolTables :: ParsingData -> String -> ScopeData
 searchSymbolTables parsingData lexeme
-    | not (null (symbolTables parsingData)) && kind result /= "None"
+    | not (null (symbolTables parsingData)) &&  kind result /= "None"
         = result
     | not (null (symbolTables parsingData)) && kind result == "None"
         = searchSymbolTables newParsingData lexeme

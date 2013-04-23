@@ -50,8 +50,9 @@ generatePushIdentifier parsingData scopeData = ParsingData {
                                     , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"] 
                                     , tagAlong = tagAlong parsingData }
 
-generateStackModyfierInteger :: ParsingData -> ParsingData
-generateStackModyfierInteger parsingData 
+--Need to determine if integer or float before doing it.
+generateStackModifierInteger :: ParsingData -> ParsingData
+generateStackModifierInteger parsingData 
       | unwrapToken (lookAheadToken parsingData) ==  "MP_PLUS"
             = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData

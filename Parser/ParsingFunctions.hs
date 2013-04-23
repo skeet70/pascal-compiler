@@ -35,7 +35,7 @@ program parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROGRAM"
-        = createSymbolTable(period_match (block (semic_match (programHeading parsingData))))
+        = period_match (block (semic_match (programHeading (createSymbolTable parsingData))))
     | otherwise
         = syntaxError "MP_PROGRAM" parsingData
 
@@ -456,7 +456,7 @@ factorTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_TIMES", "MP_DIV", "MP_MOD", "MP_AND"]
-        = factorTail (generateStackModyfierInteger (factor (multiplyingOperator parsingData))) --muls/divs/etc after factor, before factorTail
+        = factorTail (generateStackModifierInteger (factor (multiplyingOperator parsingData))) --muls/divs/etc after factor, before factorTail
     | otherwise
         = parsingData -- empty string allowed
 
@@ -482,7 +482,8 @@ factor parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_IDENTIFIER"
-        = optionalActualParameterList (functionIdentifier parsingData)
+        = let destination = searchSymbolTables parsingData (current_lexeme parsingData) 
+          in optionalActualParameterList (functionIdentifier (generatePushIdentifier parsingData destination)) -- search for and push identifier here. DONE
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT", "MP_FIXED_LIT", "MP_FLOAT_LIT", "MP_STRING_LIT"]
         = match (generatePushLiterals parsingData) --insert push actual integer_lit etc. DONE
     | unwrapToken (lookAheadToken parsingData) == "MP_NOT"
@@ -526,7 +527,8 @@ procedureIdentifier parsingData
         scopeData = ScopeData {   name = newName
                                 , kind = "MP_PROCEDURE"
                                 , varType = "MP_PROCEDURE"
-                                , offset = length (values (last (symbolTables parsingData)))}
+                                , offset = length (values (last (symbolTables parsingData)))
+                                , level = 0}
 
 -- FunctionIdentifier      ⟶ Identifier
 functionIdentifier :: ParsingData -> ParsingData
@@ -534,8 +536,7 @@ functionIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken newData) ==  "MP_IDENTIFIER"
-        = let destination = searchSymbolTables newData (current_lexeme newData) 
-          in match (generatePushIdentifier newData destination) -- search for and push identifier here. DONE
+        = match newData 
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
       where 
@@ -733,11 +734,11 @@ assignmentStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = generatePopDestination (expression (assignment_match (functionIdentifier parsingData))) destination
+        = (generatePopDestination (expression (assignment_match (functionIdentifier parsingData))) $! dest)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
     where
-        destination = searchSymbolTables parsingData (current_lexeme parsingData)
+        dest = trace(show (symbolTables parsingData)) trace("hello") searchSymbolTables parsingData (current_lexeme parsingData)
 
 --IfStatement ⟶ "if" BooleanExpression "then" Statement OptionalElsePart
 ifStatement :: ParsingData -> ParsingData
