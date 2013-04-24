@@ -54,6 +54,20 @@ generatePushIdentifier parsingData scopeData = ParsingData {
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
+generateStackIncrement :: ParsingData -> ParsingData
+generateStackIncrement parsingData = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["ADD SP #1 SP"]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
+
 generateReadFunction :: ParsingData -> ScopeData -> ParsingData
 generateReadFunction parsingData scopeData = ParsingData {
                                       lookAheadToken = lookAheadToken parsingData

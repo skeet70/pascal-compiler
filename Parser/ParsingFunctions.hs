@@ -600,7 +600,7 @@ identifierList parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) =="MP_IDENTIFIER"
-        = identifierTail (match newData)
+        = identifierTail (generateStackIncrement (match newData))
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
       where
