@@ -12,228 +12,178 @@ import Parser.Helper
 import Scanner.TokenTable
 
 generatePopDestination :: ParsingData -> ScopeData -> ParsingData
-generatePopDestination parsingData scopeData = ParsingData {
+generatePopDestination parsingData scopeData = ParsingData {   
                                       lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
                                     , line = line parsingData
                                     , column = column parsingData
                                     , errorString = errorString parsingData
                                     , input = input parsingData
-                                    , symbolTables = symbolTables parsingData
+                                    , symbolTables = symbolTables parsingData 
                                     , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"] 
                                     , tagAlong = tagAlong parsingData }
 
 generatePushLiterals :: ParsingData -> ParsingData
-generatePushLiterals parsingData = ParsingData {
+generatePushLiterals parsingData = ParsingData {   
                                       lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
                                     , line = line parsingData
                                     , column = column parsingData
                                     , errorString = errorString parsingData
                                     , input = input parsingData
-                                    , symbolTables = symbolTables parsingData
+                                    , symbolTables = symbolTables parsingData 
                                     , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData]
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData] 
                                     , tagAlong = tagAlong parsingData }
 
 generatePushIdentifier :: ParsingData -> ScopeData -> ParsingData
-generatePushIdentifier parsingData scopeData = ParsingData {
+generatePushIdentifier parsingData scopeData = ParsingData {   
                                       lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
                                     , line = line parsingData
                                     , column = column parsingData
                                     , errorString = errorString parsingData
                                     , input = input parsingData
-                                    , symbolTables = symbolTables parsingData
+                                    , symbolTables = symbolTables parsingData 
                                     , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"] 
                                     , tagAlong = tagAlong parsingData }
 
-generateStackModyfierInteger :: ParsingData -> ParsingData
-generateStackModyfierInteger parsingData
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_PLUS"
-            = ParsingData {
+generateReadFunction :: ParsingData -> ScopeData -> ParsingData
+generateReadFunction parsingData scopeData = ParsingData {   
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData 
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["RD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"] 
+                                    , tagAlong = tagAlong parsingData }
+
+generateWriteFunction :: ParsingData -> ParsingData
+generateWriteFunction parsingData = ParsingData {   
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData 
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["WRTS"] 
+                                    , tagAlong = tagAlong parsingData }
+
+--Need to determine if integer or float before doing it.
+generateStackModifierInteger :: ParsingData -> String -> ParsingData
+generateStackModifierInteger parsingData operator
+      | operator ==  "MP_PLUS"
+            = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
                   , line = line parsingData
                   , column = column parsingData
                   , errorString = errorString parsingData
                   , input = input parsingData
-                  , symbolTables = symbolTables parsingData
+                  , symbolTables = symbolTables parsingData 
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["ADDS"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["ADDS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_MINUS"
-            = ParsingData {
+      | operator ==  "MP_MINUS"
+            = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
                   , line = line parsingData
                   , column = column parsingData
                   , errorString = errorString parsingData
                   , input = input parsingData
-                  , symbolTables = symbolTables parsingData
+                  , symbolTables = symbolTables parsingData 
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["SUBS"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["SUBS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_TIMES"
-            = ParsingData {
+      | operator ==  "MP_TIMES"
+            = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
                   , line = line parsingData
                   , column = column parsingData
                   , errorString = errorString parsingData
                   , input = input parsingData
-                  , symbolTables = symbolTables parsingData
+                  , symbolTables = symbolTables parsingData 
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["MULS"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["MULS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_DIV"
-            = ParsingData {
+      | operator ==  "MP_DIV"
+            = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
                   , line = line parsingData
                   , column = column parsingData
                   , errorString = errorString parsingData
                   , input = input parsingData
-                  , symbolTables = symbolTables parsingData
+                  , symbolTables = symbolTables parsingData 
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["DIVS"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["DIVS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_MOD"
-            = ParsingData {
+      | operator ==  "MP_MOD"
+            = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
                   , line = line parsingData
                   , column = column parsingData
                   , errorString = errorString parsingData
                   , input = input parsingData
-                  , symbolTables = symbolTables parsingData
+                  , symbolTables = symbolTables parsingData 
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["MODS"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["MODS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_AND"
-            = ParsingData {
+      | operator ==  "MP_AND"
+            = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
                   , line = line parsingData
                   , column = column parsingData
                   , errorString = errorString parsingData
                   , input = input parsingData
-                  , symbolTables = symbolTables parsingData
+                  , symbolTables = symbolTables parsingData 
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["ANDS"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["ANDS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_OR"
-            = ParsingData {
+      | operator ==  "MP_OR"
+            = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
                   , line = line parsingData
                   , column = column parsingData
                   , errorString = errorString parsingData
                   , input = input parsingData
-                  , symbolTables = symbolTables parsingData
+                  , symbolTables = symbolTables parsingData 
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["ORS"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["ORS"] 
                   , tagAlong = tagAlong parsingData }
-      | unwrapToken (lookAheadToken parsingData) ==  "MP_NOT"
-            = ParsingData {
+      | operator ==  "MP_NOT"
+            = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
                   , line = line parsingData
                   , column = column parsingData
                   , errorString = errorString parsingData
                   , input = input parsingData
-                  , symbolTables = symbolTables parsingData
+                  , symbolTables = symbolTables parsingData 
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["NOTS"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["NOTS"] 
                   , tagAlong = tagAlong parsingData }
       | otherwise
-            = ParsingData {
+            = ParsingData {   
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
                   , line = line parsingData
                   , column = column parsingData
                   , errorString = errorString parsingData
                   , input = input parsingData
-                  , symbolTables = symbolTables parsingData
+                  , symbolTables = symbolTables parsingData 
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
-                  , tagAlong = tagAlong parsingData }
-
--- Called with ParsingData and the token of the operation you want to branch on.
--- Generates the code for the comparison and branch.
-generateComparison :: ParsingData -> String -> ParsingData
-generateComparison parsingData comparison
-      | comparison == "MP_EQUALS"
-            = ParsingData {
-                    lookAheadToken = lookAheadToken parsingData
-                  , hasFailed = hasFailed parsingData
-                  , line = line parsingData
-                  , column = column parsingData
-                  , errorString = errorString parsingData
-                  , input = input parsingData
-                  , symbolTables = symbolTables parsingData
-                  , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGES", "BRFS"]
-                  , tagAlong = tagAlong parsingData }
-      | comparison == "MP_LTHAN"
-            = ParsingData {
-                    lookAheadToken = lookAheadToken parsingData
-                  , hasFailed = hasFailed parsingData
-                  , line = line parsingData
-                  , column = column parsingData
-                  , errorString = errorString parsingData
-                  , input = input parsingData
-                  , symbolTables = symbolTables parsingData
-                  , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ 
-                  , tagAlong = tagAlong parsingData }
-      | comparison == "MP_GTHAN"
-            = ParsingData {
-                    lookAheadToken = lookAheadToken parsingData
-                  , hasFailed = hasFailed parsingData
-                  , line = line parsingData
-                  , column = column parsingData
-                  , errorString = errorString parsingData
-                  , input = input parsingData
-                  , symbolTables = symbolTables parsingData
-                  , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ 
-                  , tagAlong = tagAlong parsingData }
-      | comparison == "MP_LEQUAL"
-            = ParsingData {
-                    lookAheadToken = lookAheadToken parsingData
-                  , hasFailed = hasFailed parsingData
-                  , line = line parsingData
-                  , column = column parsingData
-                  , errorString = errorString parsingData
-                  , input = input parsingData
-                  , symbolTables = symbolTables parsingData
-                  , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ 
-                  , tagAlong = tagAlong parsingData }
-      | comparison == "MP_GEQUAL"
-            = ParsingData {
-                    lookAheadToken = lookAheadToken parsingData
-                  , hasFailed = hasFailed parsingData
-                  , line = line parsingData
-                  , column = column parsingData
-                  , errorString = errorString parsingData
-                  , input = input parsingData
-                  , symbolTables = symbolTables parsingData
-                  , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ 
-                  , tagAlong = tagAlong parsingData }
-      | comparison == "MP_NEQUAL"
-            = ParsingData {
-                    lookAheadToken = lookAheadToken parsingData
-                  , hasFailed = hasFailed parsingData
-                  , line = line parsingData
-                  , column = column parsingData
-                  , errorString = errorString parsingData
-                  , input = input parsingData
-                  , symbolTables = symbolTables parsingData
-                  , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ 
+                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"] 
                   , tagAlong = tagAlong parsingData }

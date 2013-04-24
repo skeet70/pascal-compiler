@@ -35,7 +35,7 @@ program parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROGRAM"
-        = createSymbolTable(period_match (block (semic_match (programHeading parsingData))))
+        = period_match (block (semic_match (programHeading (createSymbolTable parsingData))))
     | otherwise
         = syntaxError "MP_PROGRAM" parsingData
 
@@ -409,9 +409,11 @@ termTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_OR"]
-        = termTail (term (addingOperator parsingData))
+        = termTail (generateStackModifierInteger (term (addingOperator parsingData)) $! operator)
     | otherwise
         = parsingData -- empty string allowed
+      where
+        operator = unwrapToken (lookAheadToken parsingData)
 
 -- OptionalSign            ⟶ "+"
 --                         ⟶ "-"
@@ -458,9 +460,11 @@ factorTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_TIMES", "MP_DIV", "MP_MOD", "MP_AND"]
-        = factorTail (generateStackModyfierInteger (factor (multiplyingOperator parsingData))) --muls/divs/etc after factor, before factorTail
+        = factorTail (generateStackModifierInteger (factor (multiplyingOperator parsingData)) $! operator) --muls/divs/etc after factor, before factorTail
     | otherwise
         = parsingData -- empty string allowed
+      where
+        operator = unwrapToken (lookAheadToken parsingData)
 
 -- MultiplyingOperator     ⟶ "*"
 --                         ⟶ "div"
@@ -484,7 +488,8 @@ factor parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_IDENTIFIER"
-        = optionalActualParameterList (functionIdentifier parsingData)
+        = let destination = searchSymbolTables parsingData (current_lexeme parsingData) 
+          in optionalActualParameterList (functionIdentifier (generatePushIdentifier parsingData destination)) -- search for and push identifier here. DONE
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT", "MP_FIXED_LIT", "MP_FLOAT_LIT", "MP_STRING_LIT"]
         = match (generatePushLiterals parsingData) --insert push actual integer_lit etc. DONE
     | unwrapToken (lookAheadToken parsingData) == "MP_NOT"
@@ -510,7 +515,7 @@ procedureIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = match (insertData (createSymbolTable newData) scopeData)
+        = match (insertData newData scopeData)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
       where 
@@ -528,7 +533,8 @@ procedureIdentifier parsingData
         scopeData = ScopeData {   name = newName
                                 , kind = "MP_PROCEDURE"
                                 , varType = "MP_PROCEDURE"
-                                , offset = length (values (last (symbolTables parsingData)))}
+                                , offset = length (values (last (symbolTables parsingData)))
+                                , level = 0}
 
 -- FunctionIdentifier      ⟶ Identifier
 functionIdentifier :: ParsingData -> ParsingData
@@ -536,8 +542,7 @@ functionIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken newData) ==  "MP_IDENTIFIER"
-        = let destination = searchSymbolTables newData (current_lexeme newData) 
-          in match (generatePushIdentifier newData destination) -- search for and push identifier here. DONE
+        = match newData 
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
       where 
@@ -691,9 +696,11 @@ readParameter parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = functionIdentifier parsingData
+        = functionIdentifier (generateReadFunction parsingData destination)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
+    where
+        destination = searchSymbolTables parsingData (current_lexeme parsingData)
 
 --WriteStatement ⟶ "write" "(" WriteParameter WriteParameterTail ")"
 --Generate IR Code for a Write Statement
@@ -724,10 +731,14 @@ writeParameter :: ParsingData -> ParsingData
 writeParameter parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (== unwrapToken (lookAheadToken parsingData)) ["MP_PLUS", "MP_MINUS"]
-        = ordinalExpression parsingData
+    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
+        = generateWriteFunction(ordinalExpression parsingData)
+    | getTokenType (lookAheadToken parsingData) ==  "IdentifierOrLiteral"
+        = generateWriteFunction(ordinalExpression parsingData)
+    | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
+        = generateWriteFunction(ordinalExpression parsingData)
     | otherwise
-        = syntaxError "MP_PLUS or MP_MINUS" parsingData
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN" parsingData
 
 --AssignmentStatement ⟶ FunctionIdentifier ":=" Expression
 assignmentStatement :: ParsingData -> ParsingData
@@ -735,7 +746,7 @@ assignmentStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = generatePopDestination (expression (assignment_match (functionIdentifier parsingData))) destination
+        = (generatePopDestination (expression (assignment_match (functionIdentifier parsingData))) $! destination)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
     where
@@ -807,10 +818,14 @@ initialValue :: ParsingData -> ParsingData
 initialValue parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (== unwrapToken (lookAheadToken parsingData)) ["MP_PLUS", "MP_MINUS"]
+    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
+        = ordinalExpression parsingData
+    | getTokenType (lookAheadToken parsingData) ==  "IdentifierOrLiteral"
+        = ordinalExpression parsingData
+    | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
         = ordinalExpression parsingData
     | otherwise
-        = syntaxError "MP_PLUS or MP_MINUS" parsingData
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN" parsingData
 
 --StepValue ⟶ "to"
 --          ⟶ "downto"
@@ -830,10 +845,14 @@ finalValue :: ParsingData -> ParsingData
 finalValue parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS"]
+    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
+        = ordinalExpression parsingData
+    | getTokenType (lookAheadToken parsingData) ==  "IdentifierOrLiteral"
+        = ordinalExpression parsingData
+    | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
         = ordinalExpression parsingData
     | otherwise
-        = syntaxError "MP_PLUS or MP_MINUS" parsingData
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN" parsingData
 
 --ProcedureStatement ⟶ ProcedureIdentifier OptionalActualParameterList
 procedureStatement :: ParsingData -> ParsingData
@@ -879,4 +898,4 @@ actualParameter parsingData
     | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
         = ordinalExpression parsingData
     | otherwise
-        = syntaxError "MP_PLUS or MP_MINUS" parsingData
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN" parsingData
