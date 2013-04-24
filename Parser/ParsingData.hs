@@ -2,6 +2,7 @@ module Parser.ParsingData where
 
 import Scanner.TokenTable
 import Scanner.ScannerData
+import IntermediateCode.IRHelpers
 import Debug.Trace
 import Data.Char (toUpper)
 
@@ -15,6 +16,7 @@ data ParsingData = ParsingData {  lookAheadToken :: Token
                                 , current_lexeme :: String
                                 , tagAlong :: [String]
                                 , intermediateCode :: [String] -- Need to add this to any replication.
+                                , semanticRecord :: SemanticRecord
                                 } deriving (Show)
 
 data SymbolTable = SymbolTable {  values :: [ScopeData] } deriving (Show)
@@ -39,6 +41,7 @@ createSymbolTable parsingData
                   , current_lexeme=lexeme_scan(head (input parsingData))
                   , intermediateCode = intermediateCode parsingData
                   , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData
                 }
 
 -- Destroys the most recent SymbolTable in a given ParsingData's list of tables.
@@ -53,6 +56,7 @@ destroySymbolTable parsingData
                   , current_lexeme=lexeme_scan(head (input parsingData))
                   , intermediateCode = intermediateCode parsingData
                   , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData
                 }
 
 -- Searches through the SymbolTables of a given ParsingData for a lexeme and
@@ -77,6 +81,7 @@ searchSymbolTables parsingData lexeme
                                      , current_lexeme=(current_lexeme parsingData)
                                      , intermediateCode = intermediateCode parsingData
                                      , tagAlong = tagAlong parsingData
+                                     , semanticRecord = semanticRecord parsingData
                                 }
 
 -- Utility function. Walks through a given table's tuples and returns the
@@ -111,6 +116,7 @@ insertData parsingData scopeData
                   , current_lexeme=lexeme_scan(head (input parsingData))
                   , intermediateCode = intermediateCode parsingData
                   , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData
                 }
               where
                 newTables = init (symbolTables parsingData)
