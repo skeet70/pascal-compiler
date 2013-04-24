@@ -5,4 +5,6 @@ program Program1;
       B := 2 * A;
       read (B,A);
       write (A, 5+6);
+      if A > 0
+
     end.

@@ -18,6 +18,7 @@ import Parser.ParsingData
 import Parser.Helper
 import IntermediateCode.IRFunctions
 import Scanner.TokenTable
+import IntermediateCode.IRHelpers
 
 -- SystemGoal ⟶ Program eof
 systemGoal :: ParsingData -> ParsingData
@@ -767,9 +768,12 @@ ifStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IF"
-        = optionalElsePart (statement (then_match (booleanExpression (match parsingData)))) --start of conditional function
+        = optionalElsePart (statement (then_match (generateIfFunction (booleanExpression (match newData)) $ label))) --start of conditional function DONE!
     | otherwise
         = syntaxError "MP_IF" parsingData
+    where
+        newData = getNextLabel parsingData
+        label = labelNumber (semanticRecord newData)
 
 --OptionalElsePart ⟶ "else" Statement
 --                 ⟶ ε

@@ -81,6 +81,20 @@ generateWriteFunction parsingData = ParsingData {
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
+generateIfFunction :: ParsingData -> Int -> ParsingData
+generateIfFunction parsingData labelValue = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["BRFS " ++ "L" ++ show labelValue]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
+
 --Need to determine if integer or float before doing it.
 generateStackModifierInteger :: ParsingData -> String -> ParsingData
 generateStackModifierInteger parsingData operator
@@ -313,7 +327,7 @@ generateStackModifierFloat parsingData operator
 -- Called with ParsingData and the token of the operation you want to branch on.
 -- Generates the code for the comparison and branch.
 --
--- TODO: Replace ERRORs with actual generation.
+-- TODO: Replace ERRORs with actual generation. DONE!
 generateComparison :: ParsingData -> String -> ParsingData
 generateComparison parsingData comparison
       | comparison == "MP_EQUALS"
@@ -326,7 +340,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGES", "BRFS"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGES"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_LTHAN"
@@ -339,7 +353,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPLTS"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_GTHAN"
@@ -352,7 +366,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGTS"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_LEQUAL"
@@ -365,7 +379,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPLES"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_GEQUAL"
@@ -378,7 +392,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGES"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_NEQUAL"
@@ -391,7 +405,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGES"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
 
