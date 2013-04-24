@@ -373,7 +373,7 @@ optionalRelationalPart parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_EQUALS", "MP_LTHAN", "MP_GTHAN", "MP_LEQUAL", "MP_GTHAN", "MP_NEQUAL"]
-        = generateComparison $ simpleExpression (relationalOperator parsingData) $ comparison--use relationalOperator from list after simpleExpression
+        = generateComparison (simpleExpression (relationalOperator parsingData)) $ comparison--use relationalOperator from list after simpleExpression
     | otherwise
         = parsingData -- empty string allowed
       where

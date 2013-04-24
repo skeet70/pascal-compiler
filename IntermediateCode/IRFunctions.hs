@@ -229,7 +229,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ 
+                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_GTHAN"
@@ -242,7 +242,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ 
+                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_LEQUAL"
@@ -255,7 +255,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ 
+                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_GEQUAL"
@@ -268,7 +268,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ 
+                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_NEQUAL"
@@ -281,7 +281,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ 
+                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
 
