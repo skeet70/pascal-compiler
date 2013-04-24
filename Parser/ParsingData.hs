@@ -3,6 +3,7 @@ module Parser.ParsingData where
 import Scanner.TokenTable
 import Scanner.ScannerData
 import Debug.Trace
+import Data.Char (toUpper)
 
 data ParsingData = ParsingData {  lookAheadToken :: Token
                                 , hasFailed :: Bool
@@ -83,7 +84,7 @@ searchSymbolTables parsingData lexeme
 -- None
 walkTable :: SymbolTable -> Int -> String -> ScopeData
 walkTable symbolTable index lexeme
-    | name scopeData == lexeme
+    | map toUpper (name scopeData) == map toUpper lexeme
         = ScopeData { name = name scopeData
                     , kind = kind scopeData
                     , varType = varType scopeData
