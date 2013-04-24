@@ -1,6 +1,6 @@
 --Intermediate Code Generation Functions
 --
---Authored by: Tyler J. Huffman
+--Authored by: James Sonntag, Tyler J. Huffman, Murph "Ryan" Murphy
 --
 --Edited: Feb. 19, 2013
 
@@ -10,6 +10,7 @@ import Debug.Trace
 import Parser.ParsingData
 import Parser.Helper
 import Scanner.TokenTable
+import IntermediateCode.IRHelpers
 
 generatePopDestination :: ParsingData -> ScopeData -> ParsingData
 generatePopDestination parsingData scopeData = ParsingData {
@@ -92,6 +93,34 @@ generateIfFunction parsingData labelValue = ParsingData {
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = (intermediateCode parsingData) ++ ["BRFS " ++ "L" ++ show labelValue]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
+
+insertElseLabel :: ParsingData -> Int -> ParsingData
+insertElseLabel parsingData labelValue = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["L" ++ show labelValue]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
+
+insertIfLabelFunction :: ParsingData -> Int -> ParsingData
+insertIfLabelFunction parsingData labelValue = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["BR " ++ "L" ++ show labelValue] ++ ["L" ++ show (labelValue-1)]
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
