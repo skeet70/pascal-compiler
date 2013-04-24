@@ -2,6 +2,9 @@ module Parser.ParsingData where
 
 import Scanner.TokenTable
 import Scanner.ScannerData
+import IntermediateCode.IRHelpers
+import Debug.Trace
+import Data.Char (toUpper)
 
 data ParsingData = ParsingData {  lookAheadToken :: Token
                                 , hasFailed :: Bool
@@ -13,6 +16,7 @@ data ParsingData = ParsingData {  lookAheadToken :: Token
                                 , current_lexeme :: String
                                 , tagAlong :: [String]
                                 , intermediateCode :: [String] -- Need to add this to any replication.
+                                , semanticRecord :: SemanticRecord
                                 } deriving (Show)
 
 data SymbolTable = SymbolTable {  values :: [ScopeData] } deriving (Show)
@@ -37,6 +41,7 @@ createSymbolTable parsingData
                   , current_lexeme=lexeme_scan(head (input parsingData))
                   , intermediateCode = intermediateCode parsingData
                   , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData
                 }
 
 -- Destroys the most recent SymbolTable in a given ParsingData's list of tables.
@@ -51,6 +56,7 @@ destroySymbolTable parsingData
                   , current_lexeme=lexeme_scan(head (input parsingData))
                   , intermediateCode = intermediateCode parsingData
                   , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData
                 }
 
 -- Searches through the SymbolTables of a given ParsingData for a lexeme and
@@ -58,7 +64,7 @@ destroySymbolTable parsingData
 -- ScopeData with kind = None.
 searchSymbolTables :: ParsingData -> String -> ScopeData
 searchSymbolTables parsingData lexeme
-    | not (null (symbolTables parsingData)) && kind result /= "None"
+    | not (null (symbolTables parsingData)) &&  kind result /= "None"
         = result
     | not (null (symbolTables parsingData)) && kind result == "None"
         = searchSymbolTables newParsingData lexeme
@@ -75,6 +81,7 @@ searchSymbolTables parsingData lexeme
                                      , current_lexeme=(current_lexeme parsingData)
                                      , intermediateCode = intermediateCode parsingData
                                      , tagAlong = tagAlong parsingData
+                                     , semanticRecord = semanticRecord parsingData
                                 }
 
 -- Utility function. Walks through a given table's tuples and returns the
@@ -82,7 +89,7 @@ searchSymbolTables parsingData lexeme
 -- None
 walkTable :: SymbolTable -> Int -> String -> ScopeData
 walkTable symbolTable index lexeme
-    | name scopeData == lexeme
+    | map toUpper (name scopeData) == map toUpper lexeme
         = ScopeData { name = name scopeData
                     , kind = kind scopeData
                     , varType = varType scopeData
@@ -109,6 +116,7 @@ insertData parsingData scopeData
                   , current_lexeme=lexeme_scan(head (input parsingData))
                   , intermediateCode = intermediateCode parsingData
                   , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData
                 }
               where
                 newTables = init (symbolTables parsingData)
