@@ -202,8 +202,118 @@ generateStackModifierInteger parsingData operator
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
 
+-- Generates IR code for a stack modifier, for fixed/floats.
+generateStackModifierFloat :: ParsingData -> String -> ParsingData
+generateStackModifierFloat parsingData operator
+      | operator ==  "MP_PLUS"
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["ADDSF"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
+      | operator ==  "MP_MINUS"
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["SUBSF"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
+      | operator ==  "MP_TIMES"
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["MULSF"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
+      | operator ==  "MP_DIV"
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["DIVSF"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
+      | operator ==  "MP_AND"
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["ANDS"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
+      | operator ==  "MP_OR"
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["ORS"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
+      | operator ==  "MP_NOT"
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["NOTS"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
+      | otherwise
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
+
 -- Called with ParsingData and the token of the operation you want to branch on.
 -- Generates the code for the comparison and branch.
+--
+-- TODO: Replace ERRORs with actual generation.
 generateComparison :: ParsingData -> String -> ParsingData
 generateComparison parsingData comparison
       | comparison == "MP_EQUALS"
