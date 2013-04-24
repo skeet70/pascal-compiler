@@ -78,7 +78,8 @@ variableDeclarationPart parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = intermediateCode parsingData
-                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
+                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData]
+                                    , semanticRecord = semanticRecord parsingData }
 
 -- VariableDeclarationTail ⟶ VariableDeclaration ";" VariableDeclarationTail
 --                         ⟶ ε
@@ -122,7 +123,8 @@ typeParser parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = intermediateCode parsingData
-                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
+                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData]
+                                    , semanticRecord = semanticRecord parsingData }
         newList = tagAlong newData
         newType = unwrapToken (lookAheadToken parsingData)
 
@@ -144,7 +146,8 @@ typeParserForProcedureAndFunction parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = intermediateCode parsingData
-                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
+                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData]
+                                    , semanticRecord = semanticRecord parsingData }
         newList = tagAlong newData
         newType = unwrapToken (lookAheadToken parsingData)
 
@@ -171,7 +174,8 @@ procedureAndFunctionDeclarationPart parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = intermediateCode parsingData
-                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
+                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData]
+                                    , semanticRecord = semanticRecord parsingData }
 
 -- ProcedureDeclaration ⟶ ProcedureHeading ";" Block ";"
 procedureDeclaration :: ParsingData -> ParsingData
@@ -222,7 +226,8 @@ functionHeading parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = intermediateCode parsingData
-                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData]}
+                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData]
+                                    , semanticRecord = semanticRecord parsingData }
 
 -- OptionalFormalParameterList ⟶ "(" FormalParameterSection FormalParameterSectionTail ")"
 --                             ⟶ ε
@@ -278,7 +283,7 @@ variableParameterSection parsingData
         = typeParser ( colon_match ( identifierList ( match newData)))
     | otherwise
         = syntaxError "MP_VAR" parsingData
-      where 
+      where
         newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
                                     , line = line parsingData
@@ -288,7 +293,8 @@ variableParameterSection parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = intermediateCode parsingData
-                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData] }
+                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData]
+                                    , semanticRecord = semanticRecord parsingData }
 
 -- StatementPart ⟶ CompoundStatement
 statementPart :: ParsingData -> ParsingData
@@ -518,7 +524,7 @@ procedureIdentifier parsingData
         = match (insertData newData scopeData)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
-      where 
+      where
         newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
                                     , line = line parsingData
@@ -528,7 +534,8 @@ procedureIdentifier parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = intermediateCode parsingData
-                                    , tagAlong = [] }
+                                    , tagAlong = []
+                                    , semanticRecord = semanticRecord parsingData }
         newName = current_lexeme parsingData
         scopeData = ScopeData {   name = newName
                                 , kind = "MP_PROCEDURE"
@@ -542,10 +549,10 @@ functionIdentifier parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken newData) ==  "MP_IDENTIFIER"
-        = match newData 
+        = match newData
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
-      where 
+      where
         newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
                                     , line = line parsingData
@@ -555,7 +562,8 @@ functionIdentifier parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = intermediateCode parsingData
-                                    , tagAlong = tagAlong parsingData ++ [current_lexeme parsingData]}
+                                    , tagAlong = tagAlong parsingData ++ [current_lexeme parsingData]
+                                    , semanticRecord = semanticRecord parsingData }
 
 -- BooleanExpression       ⟶ Expression
 booleanExpression :: ParsingData -> ParsingData
@@ -594,7 +602,7 @@ identifierList parsingData
         = identifierTail (match newData)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
-      where 
+      where
         newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
                                     , line = line parsingData
@@ -604,7 +612,8 @@ identifierList parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = intermediateCode parsingData
-                                    , tagAlong = tagAlong parsingData ++ [current_lexeme parsingData] }
+                                    , tagAlong = tagAlong parsingData ++ [current_lexeme parsingData]
+                                    , semanticRecord = semanticRecord parsingData }
 
 -- IdentifierTail          ⟶ "," Identifier IdentifierTail
 --                         ⟶ ε

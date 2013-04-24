@@ -22,7 +22,8 @@ generatePopDestination parsingData scopeData = ParsingData {
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = (intermediateCode parsingData) ++ ["POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"]
-                                    , tagAlong = tagAlong parsingData }
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
 
 generatePushLiterals :: ParsingData -> ParsingData
 generatePushLiterals parsingData = ParsingData {
@@ -35,7 +36,8 @@ generatePushLiterals parsingData = ParsingData {
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData]
-                                    , tagAlong = tagAlong parsingData }
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
 
 generatePushIdentifier :: ParsingData -> ScopeData -> ParsingData
 generatePushIdentifier parsingData scopeData = ParsingData {
@@ -48,7 +50,8 @@ generatePushIdentifier parsingData scopeData = ParsingData {
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
-                                    , tagAlong = tagAlong parsingData }
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
 
 generateReadFunction :: ParsingData -> ScopeData -> ParsingData
 generateReadFunction parsingData scopeData = ParsingData {
@@ -61,7 +64,8 @@ generateReadFunction parsingData scopeData = ParsingData {
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = (intermediateCode parsingData) ++ ["RD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
-                                    , tagAlong = tagAlong parsingData }
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
 
 generateWriteFunction :: ParsingData -> ParsingData
 generateWriteFunction parsingData = ParsingData {
@@ -74,7 +78,8 @@ generateWriteFunction parsingData = ParsingData {
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = (intermediateCode parsingData) ++ ["WRTS"]
-                                    , tagAlong = tagAlong parsingData }
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
 
 --Need to determine if integer or float before doing it.
 generateStackModifierInteger :: ParsingData -> String -> ParsingData
@@ -90,7 +95,8 @@ generateStackModifierInteger parsingData operator
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["ADDS"]
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
       | operator ==  "MP_MINUS"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
@@ -102,7 +108,8 @@ generateStackModifierInteger parsingData operator
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["SUBS"]
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
       | operator ==  "MP_TIMES"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
@@ -114,7 +121,8 @@ generateStackModifierInteger parsingData operator
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["MULS"]
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
       | operator ==  "MP_DIV"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
@@ -126,7 +134,8 @@ generateStackModifierInteger parsingData operator
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["DIVS"]
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
       | operator ==  "MP_MOD"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
@@ -138,7 +147,8 @@ generateStackModifierInteger parsingData operator
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["MODS"]
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
       | operator ==  "MP_AND"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
@@ -150,7 +160,8 @@ generateStackModifierInteger parsingData operator
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["ANDS"]
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
       | operator ==  "MP_OR"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
@@ -162,7 +173,8 @@ generateStackModifierInteger parsingData operator
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["ORS"]
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
       | operator ==  "MP_NOT"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
@@ -174,7 +186,8 @@ generateStackModifierInteger parsingData operator
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["NOTS"]
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
       | otherwise
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
@@ -186,7 +199,8 @@ generateStackModifierInteger parsingData operator
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
 
 -- Called with ParsingData and the token of the operation you want to branch on.
 -- Generates the code for the comparison and branch.
@@ -203,7 +217,8 @@ generateComparison parsingData comparison
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["CMPGES", "BRFS"]
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_LTHAN"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
@@ -215,7 +230,8 @@ generateComparison parsingData comparison
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ 
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_GTHAN"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
@@ -227,7 +243,8 @@ generateComparison parsingData comparison
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ 
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_LEQUAL"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
@@ -239,7 +256,8 @@ generateComparison parsingData comparison
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ 
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_GEQUAL"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
@@ -251,7 +269,8 @@ generateComparison parsingData comparison
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ 
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_NEQUAL"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
@@ -263,5 +282,6 @@ generateComparison parsingData comparison
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ 
-                  , tagAlong = tagAlong parsingData }
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData }
 
