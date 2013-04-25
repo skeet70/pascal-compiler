@@ -71,7 +71,7 @@ parse parsingData
         = do putStrLn (errorString finalData)
              printIRCodeToFile finalData        
     where
-        finalData = systemGoal parsingData
+        finalData = generateHalt( systemGoal parsingData)
 
 convertToScannerData :: (String, String, Token, Int, Int) -> ScannerData
 convertToScannerData (source, lexeme, token, column, line)
