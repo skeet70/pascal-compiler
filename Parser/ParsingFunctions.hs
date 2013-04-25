@@ -303,7 +303,17 @@ statementPart parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
-        = compoundStatement parsingData
+        = compoundStatementForTables parsingData
+    | otherwise
+        = syntaxError "MP_BEGIN" parsingData
+
+-- CompoundStatement ⟶ "begin" StatementSequence "end"
+compoundStatementForTables :: ParsingData -> ParsingData
+compoundStatementForTables parsingData
+    | hasFailed parsingData == True
+        = parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
+        = destroySymbolTable (end_match ( statementSequence ( match parsingData)))
     | otherwise
         = syntaxError "MP_BEGIN" parsingData
 
@@ -313,7 +323,7 @@ compoundStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
-        = destroySymbolTable (end_match ( statementSequence ( match parsingData)))
+        = end_match ( statementSequence ( match parsingData))
     | otherwise
         = syntaxError "MP_BEGIN" parsingData
 
