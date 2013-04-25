@@ -127,7 +127,7 @@ insertElseLabel parsingData labelValue = ParsingData {
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["L" ++ show labelValue]
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["L" ++ show labelValue ++ ":"]
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
@@ -141,7 +141,7 @@ insertIfLabelFunction parsingData labelValue = ParsingData {
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["BR " ++ "L" ++ show labelValue] ++ ["L" ++ show (labelValue-1)]
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["BR " ++ "L" ++ show labelValue] ++ ["L" ++ show (labelValue-1) ++ ":"]
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
