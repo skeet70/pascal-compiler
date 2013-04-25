@@ -802,9 +802,11 @@ whileStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_WHILE"
-        = statement (do_match (booleanExpression (match parsingData)))
+        = generateEndWhile (statement (do_match (generateBranchWhile (booleanExpression (generateStartWhile (match parsingData))) $ startLabel))) $ startLabel
     | otherwise
         = syntaxError "MP_WHILE" parsingData
+      where
+        startLabel = labelNumber (semanticRecord parsingData)
 
 --ForStatement ⟶ "for" ControlVariable ":=" InitialValue StepValue FinalValue "do" Statement
 forStatement :: ParsingData -> ParsingData
