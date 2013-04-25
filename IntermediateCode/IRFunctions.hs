@@ -12,6 +12,7 @@ import Parser.Helper
 import Scanner.TokenTable
 import IntermediateCode.IRHelpers
 
+--Generates code to pop a value into a given variable
 generatePopDestination :: ParsingData -> ScopeData -> ParsingData
 generatePopDestination parsingData scopeData = ParsingData {
                                       lookAheadToken = lookAheadToken parsingData
@@ -26,6 +27,7 @@ generatePopDestination parsingData scopeData = ParsingData {
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
+--Generates code to push a literal into the stack
 generatePushLiterals :: ParsingData -> ParsingData
 generatePushLiterals parsingData = ParsingData {
                                       lookAheadToken = lookAheadToken parsingData
@@ -40,6 +42,7 @@ generatePushLiterals parsingData = ParsingData {
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
+--Generates code to push a register onto the stack
 generatePushIdentifier :: ParsingData -> ScopeData -> ParsingData
 generatePushIdentifier parsingData scopeData = ParsingData {
                                       lookAheadToken = lookAheadToken parsingData
@@ -54,6 +57,7 @@ generatePushIdentifier parsingData scopeData = ParsingData {
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
+--Increments the stack by one, used for reserving memory for storing variables into registers
 generateStackIncrement :: ParsingData -> ParsingData
 generateStackIncrement parsingData = ParsingData {
                                       lookAheadToken = lookAheadToken parsingData
@@ -68,6 +72,7 @@ generateStackIncrement parsingData = ParsingData {
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
+--Generates code to request data to be read into the program
 generateReadFunction :: ParsingData -> ScopeData -> ParsingData
 generateReadFunction parsingData scopeData = ParsingData {
                                       lookAheadToken = lookAheadToken parsingData
@@ -82,6 +87,7 @@ generateReadFunction parsingData scopeData = ParsingData {
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
+--Generates code to request data to be written to STDOUT
 generateWriteFunction :: ParsingData -> ParsingData
 generateWriteFunction parsingData = ParsingData {
                                       lookAheadToken = lookAheadToken parsingData
@@ -96,6 +102,7 @@ generateWriteFunction parsingData = ParsingData {
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
+--Generates code to create an "If" function
 generateIfFunction :: ParsingData -> Int -> ParsingData
 generateIfFunction parsingData labelValue = ParsingData {
                                       lookAheadToken = lookAheadToken parsingData
@@ -120,7 +127,7 @@ insertElseLabel parsingData labelValue = ParsingData {
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["L" ++ show labelValue]
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["L" ++ show labelValue ++ ":"]
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
@@ -134,7 +141,7 @@ insertIfLabelFunction parsingData labelValue = ParsingData {
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["BR " ++ "L" ++ show labelValue] ++ ["L" ++ show (labelValue-1)]
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["BR " ++ "L" ++ show labelValue] ++ ["L" ++ show (labelValue-1) ++ ":"]
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
@@ -510,6 +517,23 @@ generateEndWhile parsingData whileLabelStart
                           "BR L" ++ show (whileLabelStart + 1)
                         , "L" ++ show (whileLabelStart + 2) ++ ":"
                   ]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData
+            }
+
+-- Generates a "HLT" statement, and should be run at the end of execution
+generateHalt :: ParsingData -> ParsingData
+generateHalt parsingData
+    = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["HLT"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData
             }
