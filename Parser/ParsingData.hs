@@ -54,7 +54,7 @@ destroySymbolTable parsingData
                   , input=(input parsingData)
                   , symbolTables=(init (symbolTables parsingData))
                   , current_lexeme=lexeme_scan(head (input parsingData))
-                  , intermediateCode = intermediateCode parsingData
+                  , intermediateCode = intermediateCode parsingData ++ ["MOV D" ++ show ((length (symbolTables parsingData)) - 1) ++ " SP"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData
                 }
