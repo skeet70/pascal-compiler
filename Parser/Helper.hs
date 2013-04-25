@@ -526,8 +526,8 @@ procedureAndFunctionInsert parsingData listData givenType
 --            where
 --                newScope = head newVals
 
-getNextLabel :: ParsingData -> ParsingData
-getNextLabel parsingData = ParsingData {
+getNextLabelForIf :: ParsingData -> ParsingData
+getNextLabelForIf parsingData = ParsingData {
                                       lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
                                     , line = line parsingData
@@ -540,6 +540,6 @@ getNextLabel parsingData = ParsingData {
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = newSemRecord }
     where
-        newSemRecord = SemanticRecord { labelNumber = (labelNumber (semanticRecord parsingData)) + 1
+        newSemRecord = SemanticRecord { labelNumber = (labelNumber (semanticRecord parsingData)) + 2
                                       , isFloat = isFloat (semanticRecord parsingData)
                                       }

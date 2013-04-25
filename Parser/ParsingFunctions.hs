@@ -600,7 +600,7 @@ identifierList parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) =="MP_IDENTIFIER"
-        = identifierTail (match newData)
+        = identifierTail (generateStackIncrement (match newData))
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
       where
@@ -768,11 +768,11 @@ ifStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IF"
-        = optionalElsePart (statement (then_match (generateIfFunction (booleanExpression (match newData)) $ label))) --start of conditional function DONE!
+        = insertElseLabel(optionalElsePart (insertIfLabelFunction(statement (then_match (generateIfFunction (booleanExpression (match newData)) $ label-1))) $ label)) $ label --start of conditional function DONE!
     | otherwise
         = syntaxError "MP_IF" parsingData
     where
-        newData = getNextLabel parsingData
+        newData = getNextLabelForIf parsingData
         label = labelNumber (semanticRecord newData)
 
 --OptionalElsePart ⟶ "else" Statement
@@ -782,7 +782,7 @@ optionalElsePart parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_ELSE"
-        = statement (match parsingData)
+        = statement (match parsingData) --add label at end of else
     |otherwise
         = parsingData
 
