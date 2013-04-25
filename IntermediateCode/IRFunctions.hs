@@ -369,8 +369,6 @@ generateStackModifierFloat parsingData operator
 
 -- Called with ParsingData and the token of the operation you want to branch on.
 -- Generates the code for the comparison and branch.
---
--- TODO: Replace ERRORs with actual generation. DONE!
 generateComparison :: ParsingData -> String -> ParsingData
 generateComparison parsingData comparison
       | comparison == "MP_EQUALS"
@@ -451,4 +449,69 @@ generateComparison parsingData comparison
                   , intermediateCode = (intermediateCode parsingData) ++ ["CMPGES"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
+
+-- Takes in parsing data, and outputs code for the start of a while loop. Which
+-- means it just sets a label and increments the label counter for both it's
+-- label and the end label.
+generateStartWhile :: ParsingData -> ParsingData
+generateStartWhile parsingData
+      = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ [
+                            "L" ++ show (labelNumber (semanticRecord parsingData) + 1) ++ ":"
+                        ]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = SemanticRecord {
+                          labelNumber = (labelNumber (semanticRecord parsingData)) + 2
+                        , isFloat = isFloat (semanticRecord (parsingData))
+                  }}
+
+-- Generates the branch step for a while. Should be done after the comparison
+-- and startwhile statements.
+generateBranchWhile :: ParsingData -> Int -> ParsingData
+generateBranchWhile parsingData whileLabelStart
+      = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ [
+                            "BRFS L" ++ show (whileLabelStart + 2)
+                        ]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData
+            }
+
+-- Takes in ParsingData and the label number from the start of the while loop.
+-- Outputs code to jump back to the top of the loop, and the label for escaping.
+generateEndWhile :: ParsingData -> Int -> ParsingData
+generateEndWhile parsingData whileLabelStart
+      = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ [
+                          "BR " ++ show (whileLabelStart + 1)
+                        , "L" ++ show (whileLabelStart + 2) ++ ":"
+                  ]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData
+            }
+
 

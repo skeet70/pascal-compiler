@@ -303,7 +303,17 @@ statementPart parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
-        = compoundStatement parsingData
+        = compoundStatementForTables parsingData
+    | otherwise
+        = syntaxError "MP_BEGIN" parsingData
+
+-- CompoundStatement ⟶ "begin" StatementSequence "end"
+compoundStatementForTables :: ParsingData -> ParsingData
+compoundStatementForTables parsingData
+    | hasFailed parsingData == True
+        = parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
+        = destroySymbolTable (end_match ( statementSequence ( match parsingData)))
     | otherwise
         = syntaxError "MP_BEGIN" parsingData
 
@@ -313,7 +323,7 @@ compoundStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_BEGIN"
-        = destroySymbolTable (end_match ( statementSequence ( match parsingData)))
+        = end_match ( statementSequence ( match parsingData))
     | otherwise
         = syntaxError "MP_BEGIN" parsingData
 
@@ -802,9 +812,11 @@ whileStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_WHILE"
-        = statement (do_match (booleanExpression (match parsingData)))
+        = generateEndWhile (statement (do_match (generateBranchWhile (booleanExpression (generateStartWhile (match parsingData))) $ startLabel))) $ startLabel
     | otherwise
         = syntaxError "MP_WHILE" parsingData
+      where
+        startLabel = labelNumber (semanticRecord parsingData)
 
 --ForStatement ⟶ "for" ControlVariable ":=" InitialValue StepValue FinalValue "do" Statement
 forStatement :: ParsingData -> ParsingData
