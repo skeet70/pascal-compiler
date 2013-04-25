@@ -514,4 +514,66 @@ generateEndWhile parsingData whileLabelStart
                   , semanticRecord = semanticRecord parsingData
             }
 
+-- Takes in parsing data, and outputs code for the start of a for loop. Which
+-- means it just sets a label and increments the label counter for both it's
+-- label and the end label.
+generateStartFor :: ParsingData -> ParsingData
+generateStartFor parsingData
+      = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ [
+                            "L" ++ show (labelNumber (semanticRecord parsingData) + 1) ++ ":"
+                        ]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = SemanticRecord {
+                          labelNumber = (labelNumber (semanticRecord parsingData)) + 2
+                        , isFloat = isFloat (semanticRecord (parsingData))
+                  }}
 
+-- Generates the branch step for a for loop. Should be done after the comparison
+-- and startFor statements.
+generateBranchFor :: ParsingData -> Int -> ParsingData
+generateBranchFor parsingData forLabelStart
+      = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ [
+                            "BRTS L" ++ show (forLabelStart + 2)
+                        ]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData
+            }
+
+-- Takes in ParsingData and the label number from the start of the for loop.
+-- Outputs code to jump back to the top of the loop, and the label for escaping.
+generateEndFor :: ParsingData -> Int -> ParsingData
+generateEndFor parsingData forLabelStart
+      = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ [
+                          "BR L" ++ show (forLabelStart + 1)
+                        , "L" ++ show (forLabelStart + 2) ++ ":"
+                  ]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData
+            }
