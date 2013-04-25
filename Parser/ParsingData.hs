@@ -39,7 +39,7 @@ createSymbolTable parsingData
                   , input=(input parsingData)
                   , symbolTables=(symbolTables parsingData ++ [SymbolTable { values=[] }])
                   , current_lexeme=lexeme_scan(head (input parsingData))
-                  , intermediateCode = intermediateCode parsingData
+                  , intermediateCode = intermediateCode parsingData ++ [ "MOV SP D" ++ show (length (symbolTables parsingData))]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData
                 }
