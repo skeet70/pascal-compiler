@@ -507,7 +507,7 @@ generateEndWhile parsingData whileLabelStart
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ [
-                          "BR " ++ show (whileLabelStart + 1)
+                          "BR L" ++ show (whileLabelStart + 1)
                         , "L" ++ show (whileLabelStart + 2) ++ ":"
                   ]
                   , tagAlong = tagAlong parsingData
