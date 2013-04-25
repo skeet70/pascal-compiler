@@ -426,7 +426,7 @@ termTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_OR"]
-        = termTail (generateStackModifierInteger (term (addingOperator parsingData)) $! operator)
+        = termTail (generateStackModifier (term (addingOperator parsingData)) $! operator)
     | otherwise
         = parsingData -- empty string allowed
       where
@@ -477,7 +477,7 @@ factorTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_TIMES", "MP_DIV", "MP_MOD", "MP_AND"]
-        = factorTail (generateStackModifierInteger (factor (multiplyingOperator parsingData)) $! operator) --muls/divs/etc after factor, before factorTail
+        = factorTail (generateStackModifier (factor (multiplyingOperator parsingData)) $! operator) --muls/divs/etc after factor, before factorTail
     | otherwise
         = parsingData -- empty string allowed
       where

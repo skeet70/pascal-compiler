@@ -145,10 +145,10 @@ insertIfLabelFunction parsingData labelValue = ParsingData {
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
---Need to determine if integer or float before doing it.
-generateStackModifierInteger :: ParsingData -> String -> ParsingData
-generateStackModifierInteger parsingData operator
-      | operator ==  "MP_PLUS"
+-- Handles any stack modifiers. Checks semantic record for float/int.
+generateStackModifier :: ParsingData -> String -> ParsingData
+generateStackModifier parsingData operator
+      | operator ==  "MP_PLUS" && isFloat (semanticRecord parsingData) == False
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -161,7 +161,7 @@ generateStackModifierInteger parsingData operator
                   , intermediateCode = (intermediateCode parsingData) ++ ["ADDS"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
-      | operator ==  "MP_MINUS"
+      | operator ==  "MP_MINUS" && isFloat (semanticRecord parsingData) == False
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -174,7 +174,7 @@ generateStackModifierInteger parsingData operator
                   , intermediateCode = (intermediateCode parsingData) ++ ["SUBS"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
-      | operator ==  "MP_TIMES"
+      | operator ==  "MP_TIMES" && isFloat (semanticRecord parsingData) == False
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -187,7 +187,7 @@ generateStackModifierInteger parsingData operator
                   , intermediateCode = (intermediateCode parsingData) ++ ["MULS"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
-      | operator ==  "MP_DIV"
+      | operator ==  "MP_DIV" && isFloat (semanticRecord parsingData) == False
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -200,7 +200,7 @@ generateStackModifierInteger parsingData operator
                   , intermediateCode = (intermediateCode parsingData) ++ ["DIVS"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
-      | operator ==  "MP_MOD"
+      | operator ==  "MP_MOD" && isFloat (semanticRecord parsingData) == False
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -213,7 +213,7 @@ generateStackModifierInteger parsingData operator
                   , intermediateCode = (intermediateCode parsingData) ++ ["MODS"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
-      | operator ==  "MP_AND"
+      | operator ==  "MP_AND" && isFloat (semanticRecord parsingData) == False
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -226,7 +226,7 @@ generateStackModifierInteger parsingData operator
                   , intermediateCode = (intermediateCode parsingData) ++ ["ANDS"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
-      | operator ==  "MP_OR"
+      | operator ==  "MP_OR" && isFloat (semanticRecord parsingData) == False
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -239,7 +239,7 @@ generateStackModifierInteger parsingData operator
                   , intermediateCode = (intermediateCode parsingData) ++ ["ORS"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
-      | operator ==  "MP_NOT"
+      | operator ==  "MP_NOT" && isFloat (semanticRecord parsingData) == False
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -252,23 +252,6 @@ generateStackModifierInteger parsingData operator
                   , intermediateCode = (intermediateCode parsingData) ++ ["NOTS"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
-      | otherwise
-            = ParsingData {
-                    lookAheadToken = lookAheadToken parsingData
-                  , hasFailed = hasFailed parsingData
-                  , line = line parsingData
-                  , column = column parsingData
-                  , errorString = errorString parsingData
-                  , input = input parsingData
-                  , symbolTables = symbolTables parsingData
-                  , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["ERROR"]
-                  , tagAlong = tagAlong parsingData
-                  , semanticRecord = semanticRecord parsingData }
-
--- Generates IR code for a stack modifier, for fixed/floats.
-generateStackModifierFloat :: ParsingData -> String -> ParsingData
-generateStackModifierFloat parsingData operator
       | operator ==  "MP_PLUS"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
