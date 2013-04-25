@@ -465,13 +465,33 @@ generateStartWhile parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ [
-                          "L" ++ show (labelNumber (semanticRecord parsingData) + 1) ++ ":"
+                            "L" ++ show (labelNumber (semanticRecord parsingData) + 1) ++ ":"
                         ]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = SemanticRecord {
                           labelNumber = (labelNumber (semanticRecord parsingData)) + 2
                         , isFloat = isFloat (semanticRecord (parsingData))
                   }}
+
+-- Generates the branch step for a while. Should be done after the comparison
+-- and startwhile statements.
+generateBranchWhile :: ParsingData -> Int -> ParsingData
+generateBranchWhile parsingData whileLabelStart
+      = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ [
+                            "BRFS L" ++ show (whileLabelStart + 2)
+                        ]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData
+            }
 
 -- Takes in ParsingData and the label number from the start of the while loop.
 -- Outputs code to jump back to the top of the loop, and the label for escaping.
@@ -491,9 +511,7 @@ generateEndWhile parsingData whileLabelStart
                         , "L" ++ show (whileLabelStart + 2) ++ ":"
                   ]
                   , tagAlong = tagAlong parsingData
-                  , semanticRecord = SemanticRecord {
-                          labelNumber = (labelNumber (semanticRecord parsingData))
-                        , isFloat = isFloat (semanticRecord (parsingData))
-                  }}
+                  , semanticRecord = semanticRecord parsingData
+            }
 
 
