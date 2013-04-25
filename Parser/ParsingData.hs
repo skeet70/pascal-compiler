@@ -84,7 +84,7 @@ searchSymbolTables parsingData lexeme
                                      , semanticRecord = semanticRecord parsingData
                                 }
 
--- Utility function. Walks through a given table's tuples and returns the
+-- Utility function for searchSymbolTable. Walks through a given table's tuples and returns the
 -- matching ScopeData. If it isn't there, it will return a ScopeData of the kind
 -- None
 walkTable :: SymbolTable -> Int -> String -> ScopeData
