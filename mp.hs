@@ -81,10 +81,6 @@ convertToScannerData (source, lexeme, token, column, line)
                     , lexeme_scan=lexeme
                 }
 
-packParsingData :: ScannerData -> ParsingData -> ParsingData
-packParsingData scannerData parsingData
-    = parsingData
-
 --extractData :: (String, String, Token, Int, Int) -> IO ()
 --extractData (source, lexeme, token, column, line) = do
 --    putStrLn (unwrapToken token ++ " " ++ show line ++ " " ++ show column ++ " " ++ lexeme)
