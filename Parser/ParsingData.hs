@@ -69,7 +69,7 @@ searchSymbolTables parsingData lexeme
     | not (null (symbolTables parsingData)) && kind result == "None"
         = searchSymbolTables newParsingData lexeme
     | otherwise
-        = ScopeData { kind = "None" }
+        = ScopeData { kind = "None", offset = offset result }
       where
         result = walkTable (last (symbolTables parsingData)) (length (symbolTables parsingData) - 1) lexeme
         newParsingData = ParsingData { lookAheadToken=(lookAheadToken parsingData)
