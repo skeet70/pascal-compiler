@@ -469,7 +469,11 @@ typeInsert parsingData listData givenType
     | otherwise
         = insertData newParsingData scopeData
       where
-        checker = listData!!2
+        checker = 
+            (if (length listData >= 3) 
+            then listData!!2
+            else last listData)
+
         scopeData = ScopeData {   name = listData!!1
                                 , kind = listData!!0
                                 , varType = givenType
