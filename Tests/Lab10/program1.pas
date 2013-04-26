@@ -1,0 +1,8 @@
+MOV SP D0
+ADD SP #1 SP
+MOV #1 0(D0)
+PUSH #"A = "
+WRTS
+WRT 0(D0)
+MOV D0 SP
+HLT
