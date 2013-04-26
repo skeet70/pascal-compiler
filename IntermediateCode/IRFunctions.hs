@@ -601,3 +601,33 @@ generateEndFor parsingData forLabelStart
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData
             }
+
+generateIncrementFunction :: ParsingData -> ScopeData -> ParsingData
+generateIncrementFunction  parsingData scopeData = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ 
+                                    ["ADD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")" 
+                                    ++ " #1 " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
+
+generateDecrementFunction :: ParsingData -> ScopeData -> ParsingData
+generateDecrementFunction  parsingData scopeData = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["RD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }

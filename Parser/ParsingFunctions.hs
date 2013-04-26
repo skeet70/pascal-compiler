@@ -824,9 +824,30 @@ forStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FOR"
-        = statement (do_match (finalValue (stepValue (initialValue (assignment_match (controlVariable (match parsingData)))))))
+        = generateEndFor (statement
+                            (generateBranchFor
+                                (do_match
+                                    (generateComparison
+                                        (finalValue
+                                            (stepValue
+                                                (generatePushIdentifier
+                                                    (generateStartFor
+                                                        (generatePopDestination
+                                                            (initialValue
+                                                                (assignment_match
+                                                                    (controlVariable newData)))
+                                                            $ destination))
+                                                $ destination)
+                                            $ destination))
+                                        "MP_EQUALS")) 
+                            startLabel))
+                        startLabel
     | otherwise
         = syntaxError "MP_FOR" parsingData
+    where
+        startLabel = labelNumber (semanticRecord parsingData)
+        newData = match parsingData
+        destination = searchSymbolTables newData (current_lexeme newData)
 
 --ControlVariable ⟶ FunctionIdentifier
 controlVariable :: ParsingData -> ParsingData
@@ -854,14 +875,14 @@ initialValue parsingData
 
 --StepValue ⟶ "to"
 --          ⟶ "downto"
-stepValue :: ParsingData -> ParsingData
-stepValue parsingData
+stepValue :: ParsingData -> ScopeData -> ParsingData
+stepValue parsingData scopeData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_TO"
-        = match parsingData
+        = generateIncrementFunction (match parsingData) scopeData
     | unwrapToken (lookAheadToken parsingData) == "MP_DOWNTO"
-        = match parsingData
+        = generateDecrementFunction (match parsingData) scopeData
     | otherwise
         = syntaxError "MP_TO or MP_DOWNTO" parsingData
 
