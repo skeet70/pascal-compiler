@@ -184,7 +184,7 @@ procedureDeclaration parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROCEDURE"
-        = createSymbolTable (semic_match ( block ( semic_match ( procedureHeading parsingData))))
+        =  semic_match (block (semic_match (procedureHeading parsingData)))
     | otherwise
         = syntaxError "MP_PROCEDURE" parsingData
 
@@ -194,7 +194,7 @@ functionDeclaration parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
-        = createSymbolTable (semic_match ( block ( semic_match ( functionHeading parsingData))))
+        =  semic_match ( block ( semic_match ( functionHeading parsingData)))
     | otherwise
         = syntaxError "MP_FUNCTION" parsingData
 
@@ -426,7 +426,7 @@ termTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_OR"]
-        = termTail (generateStackModifierInteger (term (addingOperator parsingData)) $! operator)
+        = termTail (generateStackModifier (term (addingOperator parsingData)) $! operator)
     | otherwise
         = parsingData -- empty string allowed
       where
@@ -477,7 +477,7 @@ factorTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_TIMES", "MP_DIV", "MP_MOD", "MP_AND"]
-        = factorTail (generateStackModifierInteger (factor (multiplyingOperator parsingData)) $! operator) --muls/divs/etc after factor, before factorTail
+        = factorTail (generateStackModifier (factor (multiplyingOperator parsingData)) $! operator) --muls/divs/etc after factor, before factorTail
     | otherwise
         = parsingData -- empty string allowed
       where
@@ -802,9 +802,11 @@ repeatStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_REPEAT"
-        = booleanExpression (until_match (statementSequence (match parsingData)))
+        = generateEndRepeat (booleanExpression (until_match (statementSequence (generateStartRepeat (match parsingData))))) $ repeatLabel
     | otherwise
         = syntaxError "MP_REPEAT" parsingData
+      where
+        repeatLabel = (labelNumber (semanticRecord parsingData) + 1)
 
 --WhileStatement ⟶ "while" BooleanExpression "do" Statement
 whileStatement :: ParsingData -> ParsingData
