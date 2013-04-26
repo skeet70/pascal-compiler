@@ -802,9 +802,11 @@ repeatStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_REPEAT"
-        = booleanExpression (until_match (statementSequence (match parsingData)))
+        = generateEndRepeat (booleanExpression (until_match (statementSequence (generateStartRepeat (match parsingData))))) $ repeatLabel
     | otherwise
         = syntaxError "MP_REPEAT" parsingData
+      where
+        repeatLabel = (labelNumber (semanticRecord parsingData) + 1)
 
 --WhileStatement ⟶ "while" BooleanExpression "do" Statement
 whileStatement :: ParsingData -> ParsingData

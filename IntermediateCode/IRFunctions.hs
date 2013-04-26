@@ -24,7 +24,7 @@ generateProcedureLabel parsingData procedureLabel
             , symbolTables = symbolTables parsingData
             , current_lexeme = current_lexeme parsingData
             , intermediateCode = (intermediateCode parsingData) ++ [
-                  "L" ++ procedureLabel ++ ":"
+                  "L" ++ show procedureLabel ++ ":"
             ]
             , tagAlong = tagAlong parsingData
             , semanticRecord = SemanticRecord {
@@ -534,6 +534,49 @@ generateEndWhile parsingData whileLabelStart
                   , intermediateCode = (intermediateCode parsingData) ++ [
                           "BR L" ++ show (whileLabelStart + 1)
                         , "L" ++ show (whileLabelStart + 2) ++ ":"
+                  ]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = semanticRecord parsingData
+            }
+
+-- Takes in parsing data, and outputs code for the start of a while loop. Which
+-- means it just sets a label and increments the label counter for both it's
+-- label and the end label.
+generateStartRepeat :: ParsingData -> ParsingData
+generateStartRepeat parsingData
+      = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ [
+                            "L" ++ show (labelNumber (semanticRecord parsingData) + 1) ++ ":"
+                        ]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = SemanticRecord {
+                          labelNumber = (labelNumber (semanticRecord parsingData)) + 1
+                        , isFloat = isFloat (semanticRecord (parsingData))
+                  }}
+
+-- Takes in ParsingData and the label number from the start of the while loop.
+-- Outputs code to jump back to the top of the loop, and the label for escaping.
+generateEndRepeat :: ParsingData -> Int -> ParsingData
+generateEndRepeat parsingData repeatLabelStart
+      = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ [
+                          "BRFS L" ++ show (repeatLabelStart)
                   ]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData
