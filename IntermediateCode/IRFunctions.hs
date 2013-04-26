@@ -12,6 +12,41 @@ import Parser.Helper
 import Scanner.TokenTable
 import IntermediateCode.IRHelpers
 
+generateProcedureLabel :: ParsingData -> Int -> ParsingData
+generateProcedureLabel parsingData procedureLabel
+      = ParsingData {
+              lookAheadToken = lookAheadToken parsingData
+            , hasFailed = hasFailed parsingData
+            , line = line parsingData
+            , column = column parsingData
+            , errorString = errorString parsingData
+            , input = input parsingData
+            , symbolTables = symbolTables parsingData
+            , current_lexeme = current_lexeme parsingData
+            , intermediateCode = (intermediateCode parsingData) ++ [
+                  "L" ++ procedureLabel ++ ":"
+            ]
+            , tagAlong = tagAlong parsingData
+            , semanticRecord = SemanticRecord {
+                    labelNumber = procedureLabel
+                  , isFloat = isFloat (semanticRecord parsingData)
+            } }
+
+generateProcedureEnd :: ParsingData -> Int -> ParsingData
+generateProcedureEnd parsingData procedureLabel
+      = ParsingData {
+              lookAheadToken = lookAheadToken parsingData
+            , hasFailed = hasFailed parsingData
+            , line = line parsingData
+            , column = column parsingData
+            , errorString = errorString parsingData
+            , input = input parsingData
+            , symbolTables = symbolTables parsingData
+            , current_lexeme = current_lexeme parsingData
+            , intermediateCode = (intermediateCode parsingData) ++ ["RET"]
+            , tagAlong = tagAlong parsingData
+            , semanticRecord = semanticRecord parsingData }
+
 --Generates code to pop a value into a given variable
 generatePopDestination :: ParsingData -> ScopeData -> ParsingData
 generatePopDestination parsingData scopeData = ParsingData {

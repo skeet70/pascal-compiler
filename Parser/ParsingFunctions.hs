@@ -184,7 +184,7 @@ procedureDeclaration parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_PROCEDURE"
-        = createSymbolTable (semic_match ( block ( semic_match ( procedureHeading parsingData))))
+        =  semic_match (block (semic_match (procedureHeading parsingData)))
     | otherwise
         = syntaxError "MP_PROCEDURE" parsingData
 
@@ -194,7 +194,7 @@ functionDeclaration parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FUNCTION"
-        = createSymbolTable (semic_match ( block ( semic_match ( functionHeading parsingData))))
+        =  semic_match ( block ( semic_match ( functionHeading parsingData)))
     | otherwise
         = syntaxError "MP_FUNCTION" parsingData
 
