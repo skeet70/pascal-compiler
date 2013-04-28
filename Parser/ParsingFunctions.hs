@@ -19,6 +19,7 @@ import Parser.Helper
 import IntermediateCode.IRFunctions
 import Scanner.TokenTable
 import IntermediateCode.IRHelpers
+import Scanner.ScannerData
 
 -- SystemGoal ⟶ Program eof
 systemGoal :: ParsingData -> ParsingData
@@ -89,9 +90,21 @@ variableDeclarationTail parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = variableDeclarationTail ( semic_match ( variableDeclaration parsingData))
+        = variableDeclarationTail ( semic_match ( variableDeclaration newData))
     | otherwise
         = parsingData
+    where
+        newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = intermediateCode parsingData
+                                    , tagAlong = tagAlong parsingData ++ [unwrapToken $! lookAheadToken parsingData]
+                                    , semanticRecord = semanticRecord parsingData }
 
 -- VariableDeclaration ⟶ Identifierlist ":" Type
 variableDeclaration :: ParsingData -> ParsingData
@@ -412,12 +425,34 @@ simpleExpression parsingData
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS"]
         = termTail (term (optionalSign parsingData))
-    | getTokenType (lookAheadToken parsingData) ==  "IdentifierOrLiteral"
-        = termTail (term (optionalSign parsingData))
+    | getTokenType (lookAheadToken parsingData) ==  "IdentifierOrLiteral" --If float change to true
+        = termTail (term (optionalSign newDataID))
     | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
         = termTail (term (optionalSign parsingData))
     | otherwise
         = parsingData -- empty string allowed
+    where
+        destination = ( if unwrapToken(lookAheadToken parsingData) == "MP_IDENTIFIER" 
+                        then searchSymbolTables parsingData (current_lexeme parsingData)
+                        else ScopeData {name="name",varType="none"})
+        destination2 = ( if unwrapToken(token((input parsingData)!!2)) == "MP_IDENTIFIER" && length(input parsingData) >= 2
+                        then searchSymbolTables parsingData (lexeme_scan((input parsingData)!!2))
+                        else ScopeData {name="name",varType="none"})
+        newDataID = (if unwrapToken(lookAheadToken parsingData) == "MP_IDENTIFIER" && (any (varType destination ==) ["MP_FIXED", "MP_FLOAT"] || any (varType destination2 ==) ["MP_FIXED", "MP_FLOAT"])
+                    then ParsingData {
+                                  lookAheadToken = lookAheadToken parsingData
+                                , hasFailed = hasFailed parsingData
+                                , line = line parsingData
+                                , column = column parsingData
+                                , errorString = errorString parsingData
+                                , input = input parsingData
+                                , symbolTables = symbolTables parsingData
+                                , current_lexeme = current_lexeme parsingData
+                                , intermediateCode = (intermediateCode parsingData)
+                                , tagAlong = tagAlong parsingData
+                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True}
+                                }
+                    else parsingData)
 
 -- TermTail                ⟶ AddingOperator Term TermTail
 --                         ⟶ ε
@@ -505,16 +540,32 @@ factor parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_IDENTIFIER"
-        = let destination = searchSymbolTables parsingData (current_lexeme parsingData) 
-          in optionalActualParameterList (functionIdentifier (generatePushIdentifier parsingData destination)) -- search for and push identifier here. DONE
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT", "MP_FIXED_LIT", "MP_FLOAT_LIT", "MP_STRING_LIT"]
+        = optionalActualParameterList (functionIdentifier (generatePushIdentifier parsingData $ destination)) -- search for and push identifier here. DONE
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT", "MP_STRING_LIT"]
         = match (generatePushLiterals parsingData) --insert push actual integer_lit etc. DONE
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_FIXED_LIT","MP_FLOAT_LIT"] --Need to grab next token
+        = match (generatePushLiterals newData)
     | unwrapToken (lookAheadToken parsingData) == "MP_NOT"
         = factor (match parsingData) -- add not boolean to list of functions / or apply not function after factor call
     | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN"
         = r_paren_match (expression (match parsingData))
     | otherwise
         = syntaxError "MP_IDENTIFIER, MP_INTEGER_LIT, MP_FIXED_LIT, MP_FLOAT_LIT, MP_NOT, MP_STRING_LIT, or MP_LPAREN" parsingData
+    where
+        newData = ParsingData {
+                                  lookAheadToken = lookAheadToken parsingData
+                                , hasFailed = hasFailed parsingData
+                                , line = line parsingData
+                                , column = column parsingData
+                                , errorString = errorString parsingData
+                                , input = input parsingData
+                                , symbolTables = symbolTables parsingData
+                                , current_lexeme = current_lexeme parsingData
+                                , intermediateCode = (intermediateCode parsingData)
+                                , tagAlong = tagAlong parsingData
+                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True}
+                                }
+        destination = searchSymbolTables parsingData (current_lexeme parsingData)
 
 -- ProgramIdentifier       ⟶ Identifier
 programIdentifier :: ParsingData -> ParsingData
@@ -668,7 +719,7 @@ statement parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_WRITE", "MP_WRITELN", "MP_FSLASH"]
         = writeStatement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = assignmentStatement parsingData
+        = newData
     | unwrapToken (lookAheadToken parsingData) == "MP_IF"
         = ifStatement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_WHILE"
@@ -681,6 +732,19 @@ statement parsingData
         = procedureStatement parsingData
     | otherwise
         = emptyStatement parsingData
+    where
+        assData = assignmentStatement parsingData
+        newData = ParsingData { lookAheadToken=(lookAheadToken assData)
+                  , hasFailed=(hasFailed assData)
+                  , line=(line assData)
+                  , column=(column assData)
+                  , input=(input assData)
+                  , symbolTables= symbolTables assData
+                  , current_lexeme= current_lexeme assData
+                  , intermediateCode = intermediateCode assData
+                  , tagAlong = tagAlong assData
+                  , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord assData), isFloat = False}
+                }
 
 emptyStatement :: ParsingData -> ParsingData
 emptyStatement parsingData
@@ -728,8 +792,10 @@ writeStatement :: ParsingData -> ParsingData
 writeStatement parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_WRITE", "MP_WRITELN"]
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_WRITE"]
         = r_paren_match (writeParameterTail (writeParameter (l_paren_match (match parsingData)))) --call write function after writeParameter
+    | unwrapToken (lookAheadToken parsingData) == "MP_WRITELN"
+        = r_paren_match (writeLineParameterTail (writeLineParameter (l_paren_match (match parsingData))))
     | unwrapToken (lookAheadToken parsingData) == "MP_FSLASH"
         = match parsingData
     | otherwise
@@ -760,16 +826,56 @@ writeParameter parsingData
     | otherwise
         = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN" parsingData
 
+--WriteParameterTail  ⟶ "," WriteParameter
+--                    ⟶ ε
+writeLineParameterTail :: ParsingData -> ParsingData
+writeLineParameterTail parsingData
+    | hasFailed parsingData == True
+        = parsingData
+    | unwrapToken (lookAheadToken parsingData) == "MP_COMMA"
+        = writeLineParameter (match parsingData)
+    | otherwise
+        = parsingData
+
+--WriteParameter ⟶ OrdinalExpression
+writeLineParameter :: ParsingData -> ParsingData
+writeLineParameter parsingData
+    | hasFailed parsingData == True
+        = parsingData
+    | any (== unwrapToken ((lookAheadToken parsingData))) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
+        = generateWriteFunction(ordinalExpression parsingData)
+    | getTokenType (lookAheadToken parsingData) ==  "IdentifierOrLiteral"
+        = generateWriteLineFunction(ordinalExpression parsingData)
+    | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
+        = generateWriteFunction(ordinalExpression parsingData)
+    | otherwise
+        = syntaxError "IdentifierOrLiteral, ReservedWord, MP_PLUS, MP_MINUS, MP_NOT, or MP_LPAREN" parsingData
+
 --AssignmentStatement ⟶ FunctionIdentifier ":=" Expression
 assignmentStatement :: ParsingData -> ParsingData
 assignmentStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
-        = (generatePopDestination (expression (assignment_match (functionIdentifier parsingData))) $! destination)
+        = (generatePopDestination (expression (assignment_match (functionIdentifier newData))) $! destination)
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
     where
+        newData = (if any (varType destination ==) ["MP_FLOAT", "MP_FIXED"]
+                    then ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData)
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True}
+                                    }
+                    else parsingData)
         destination = searchSymbolTables parsingData (current_lexeme parsingData)
 
 --IfStatement ⟶ "if" BooleanExpression "then" Statement OptionalElsePart

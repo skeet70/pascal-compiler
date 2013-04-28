@@ -463,7 +463,7 @@ eof_match parsingData
         = syntaxError "MP_EOF" parsingData
 
 typeInsert :: ParsingData -> [String] -> String -> ParsingData
-typeInsert parsingData listData givenType
+typeInsert parsingData listData givenType --BAD SHIT BRO! 
     | checker /= givenType
         = typeInsert otherNewParseData  newListData givenType
     | otherwise

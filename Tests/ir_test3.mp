@@ -3,5 +3,5 @@ program Program1;
     Fred : integer;
     hooray : float;
     begin
-      A := 1;
+      A := 1.5;
     end.
