@@ -12,4 +12,5 @@ module IntermediateCode.IRHelpers where
 data SemanticRecord = SemanticRecord { labelNumber :: Int
                                      , isFloat :: Bool
                                      , idType :: String
+                                     , crement :: String
                                     } deriving (Show)

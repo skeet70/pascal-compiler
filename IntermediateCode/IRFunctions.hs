@@ -31,6 +31,7 @@ generateProcedureLabel parsingData procedureLabel
                     labelNumber = procedureLabel
                   , isFloat = isFloat (semanticRecord parsingData)
                   , idType = idType (semanticRecord parsingData)
+                  , crement = crement (semanticRecord parsingData)
             } }
 
 generateProcedureEnd :: ParsingData -> Int -> ParsingData
@@ -308,7 +309,7 @@ generateWriteLineFunction parsingData = ParsingData {
                                     , input = input parsingData
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["WRTLN"]
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["WRTLNS"]
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
@@ -764,6 +765,7 @@ generateStartWhile parsingData
                           labelNumber = (labelNumber (semanticRecord parsingData)) + 2
                         , isFloat = isFloat (semanticRecord (parsingData))
                         , idType = idType (semanticRecord parsingData)
+                        , crement = crement (semanticRecord parsingData)
                   }}
 
 -- Generates the branch step for a while. Should be done after the comparison
@@ -829,6 +831,7 @@ generateStartRepeat parsingData
                           labelNumber = (labelNumber (semanticRecord parsingData)) + 1
                         , isFloat = isFloat (semanticRecord (parsingData))
                         , idType = idType (semanticRecord parsingData)
+                        , crement = crement (semanticRecord parsingData)
                   }}
 
 -- Takes in ParsingData and the label number from the start of the while loop.
@@ -890,6 +893,7 @@ generateStartFor parsingData
                           labelNumber = (labelNumber (semanticRecord parsingData)) + 2
                         , isFloat = isFloat (semanticRecord (parsingData))
                         , idType = idType (semanticRecord parsingData)
+                        , crement = crement (semanticRecord parsingData)
                   }}
 
 -- Generates the branch step for a for loop. Should be done after the comparison
@@ -933,21 +937,35 @@ generateEndFor parsingData forLabelStart
                   , semanticRecord = semanticRecord parsingData
             }
 
-generateIncrementFunction :: ParsingData -> ScopeData -> ParsingData
-generateIncrementFunction  parsingData scopeData = ParsingData {
-                                      lookAheadToken = lookAheadToken parsingData
-                                    , hasFailed = hasFailed parsingData
-                                    , line = line parsingData
-                                    , column = column parsingData
-                                    , errorString = errorString parsingData
-                                    , input = input parsingData
-                                    , symbolTables = symbolTables parsingData
-                                    , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ 
-                                    ["ADD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")" 
-                                    ++ " #1 " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
-                                    , tagAlong = tagAlong parsingData
-                                    , semanticRecord = semanticRecord parsingData }
+generateCrementFunction :: ParsingData -> ScopeData -> ParsingData
+generateCrementFunction parsingData scopeData = 
+      (if crement (semanticRecord parsingData) == "to"
+            then ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ 
+                        ["ADD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")" 
+                        ++ " #1 " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["RD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData })
 
 generateDecrementFunction :: ParsingData -> ScopeData -> ParsingData
 generateDecrementFunction  parsingData scopeData = ParsingData {
@@ -960,5 +978,19 @@ generateDecrementFunction  parsingData scopeData = ParsingData {
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = (intermediateCode parsingData) ++ ["RD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
+
+generateNegativeFunction :: ParsingData -> ParsingData
+generateNegativeFunction parsingData = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["NEGS"]
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }

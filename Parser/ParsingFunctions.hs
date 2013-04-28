@@ -2,7 +2,7 @@
 --
 --Authored by: Tyler J. Huffman, James Sonntag, and Murph "Ryan" Murphy
 
---Edited: Feb. 19, 2013
+--Edited: April 28, 2013
 
 
 --First section of Parsing Functions
@@ -56,10 +56,8 @@ block :: ParsingData -> ParsingData
 block parsingData
     | hasFailed parsingData == True
         = parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_VAR"
-        = statementPart ( procedureAndFunctionDeclarationPart ( variableDeclarationPart parsingData))
     | otherwise
-        =  syntaxError "MP_VAR" parsingData
+        = statementPart ( procedureAndFunctionDeclarationPart ( variableDeclarationPart parsingData))
 
 -- VariableDeclarationPart ⟶ "var" VariableDeclaration ";" VariableDeclarationTail
 variableDeclarationPart :: ParsingData -> ParsingData
@@ -345,7 +343,7 @@ statementSequence :: ParsingData -> ParsingData
 statementSequence parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_BEGIN", "MP_READ", "MP_WRITE", "MP_IDENTIFIER", "MP_IF", "MP_WHILE", "MP_REPEAT", "MP_FOR"]
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_BEGIN", "MP_READ", "MP_WRITE", "MP_WRITELN", "MP_IDENTIFIER", "MP_IF", "MP_WHILE", "MP_REPEAT", "MP_FOR"]
         = statementTail ( statement ( parsingData))
     | otherwise
         = syntaxError "MP_BEGIN, MP_READ, MP_WRITE, MP_IDENTIFIER, MP_IF, MP_WHILE, MP_REPEAT, or MP_FOR" parsingData
@@ -423,7 +421,7 @@ simpleExpression :: ParsingData -> ParsingData
 simpleExpression parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS"]
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
         = termTail (term (optionalSign parsingData))
     | getTokenType (lookAheadToken parsingData) ==  "IdentifierOrLiteral" --If float change to true
         = termTail (term (optionalSign newDataID))
@@ -450,7 +448,7 @@ simpleExpression parsingData
                                 , current_lexeme = current_lexeme parsingData
                                 , intermediateCode = (intermediateCode parsingData)
                                 , tagAlong = tagAlong parsingData
-                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = idType (semanticRecord parsingData)}
+                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = idType (semanticRecord parsingData), crement = crement (semanticRecord parsingData)}
                                 }
                     else parsingData)
 
@@ -474,7 +472,7 @@ optionalSign :: ParsingData -> ParsingData
 optionalSign parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS"]
+    | unwrapToken (lookAheadToken parsingData) == "MP_MINUS"
         = match parsingData --add +/-1 to stack for numbers then MULS after id is put on stack
     | otherwise
         = parsingData --empty string allowed
@@ -563,7 +561,7 @@ factor parsingData
                                 , current_lexeme = current_lexeme parsingData
                                 , intermediateCode = (intermediateCode parsingData)
                                 , tagAlong = tagAlong parsingData
-                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = idType (semanticRecord parsingData)}
+                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = idType (semanticRecord parsingData), crement = crement (semanticRecord parsingData)}
                                 }
         destination = searchSymbolTables parsingData (current_lexeme parsingData)
 
@@ -743,7 +741,7 @@ statement parsingData
                   , current_lexeme= current_lexeme assData
                   , intermediateCode = intermediateCode assData
                   , tagAlong = tagAlong assData
-                  , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord assData), isFloat = False, idType = "none"}
+                  , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord assData), isFloat = False, idType = "none", crement = crement (semanticRecord parsingData)}
                 }
 
 emptyStatement :: ParsingData -> ParsingData
@@ -873,7 +871,7 @@ assignmentStatement parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = (intermediateCode parsingData)
                                     , tagAlong = tagAlong parsingData
-                                    , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = "float"}
+                                    , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = "float", crement = crement (semanticRecord parsingData)}
                                     }
                     else if any (varType destination ==) ["MP_STRING"]
                     then ParsingData {
@@ -887,7 +885,7 @@ assignmentStatement parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = (intermediateCode parsingData)
                                     , tagAlong = tagAlong parsingData
-                                    , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = False, idType = "string"}
+                                    , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = False, idType = "string", crement = crement (semanticRecord parsingData)}
                                     }
                     else ParsingData {
                                       lookAheadToken = lookAheadToken parsingData
@@ -900,7 +898,7 @@ assignmentStatement parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = (intermediateCode parsingData)
                                     , tagAlong = tagAlong parsingData
-                                    , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = False, idType = "integer"}
+                                    , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = False, idType = "integer", crement = crement (semanticRecord parsingData)}
                                     })
         destination = searchSymbolTables parsingData (current_lexeme parsingData)
 
@@ -958,24 +956,26 @@ forStatement parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_FOR"
-        = generateEndFor (statement
-                            (generateBranchFor
-                                (do_match
-                                    (generateComparison
-                                        (finalValue
-                                            (stepValue
-                                                (generatePushIdentifier
-                                                    (generateStartFor
-                                                        (generatePopDestination
-                                                            (initialValue
-                                                                (assignment_match
-                                                                    (controlVariable newData)))
-                                                            $ destination))
-                                                $ destination)
-                                            $ destination))
-                                        "MP_EQUALS")) 
-                            startLabel))
-                        startLabel
+        = generateEndFor 
+                    (generateCrementFunction(statement
+                        (generateBranchFor
+                            (do_match
+                                (generateComparison
+                                    (finalValue
+                                        (stepValue
+                                            (generatePushIdentifier
+                                                (generateStartFor
+                                                    (generatePopDestination
+                                                        (initialValue
+                                                            (assignment_match
+                                                                (controlVariable newData)))
+                                                        $ destination))
+                                            $ destination)
+                                        $ destination))
+                                    "MP_EQUALS")) 
+                        startLabel))
+                    destination)
+                startLabel
     | otherwise
         = syntaxError "MP_FOR" parsingData
     where
@@ -1014,11 +1014,38 @@ stepValue parsingData scopeData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_TO"
-        = generateIncrementFunction (match parsingData) scopeData
+        = match newDataUp
     | unwrapToken (lookAheadToken parsingData) == "MP_DOWNTO"
-        = generateDecrementFunction (match parsingData) scopeData
+        = match newDataDown
     | otherwise
         = syntaxError "MP_TO or MP_DOWNTO" parsingData
+    where
+        newDataDown = ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData)
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = False, idType = idType (semanticRecord parsingData), crement = "downto"}
+                        }
+        newDataUp = ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData)
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = False, idType = idType (semanticRecord parsingData), crement = "to"}
+                        }
 
 --FinalValue ⟶ OrdinalExpression
 finalValue :: ParsingData -> ParsingData
