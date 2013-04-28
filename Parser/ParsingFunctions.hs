@@ -123,10 +123,10 @@ typeParser :: ParsingData -> ParsingData
 typeParser parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING_LIT"]
-        = match (typeInsert newData newList newType)
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING"]
+        = trace(unwrapToken(lookAheadToken parsingData)) match (typeInsert newData newList newType)
     | otherwise
-        = syntaxError "MP_INTEGER, MP_FLOAT, MP_BOOLEAN, MP_STRING_LIT" parsingData
+        = trace(unwrapToken(lookAheadToken parsingData)) syntaxError "MP_INTEGER, MP_FLOAT, MP_BOOLEAN, MP_STRING" parsingData
       where
         newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
@@ -874,6 +874,20 @@ assignmentStatement parsingData
                                     , intermediateCode = (intermediateCode parsingData)
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = "float"}
+                                    }
+                    else if any (varType destination ==) ["MP_STRING"]
+                    then ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData)
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = False, idType = "string"}
                                     }
                     else ParsingData {
                                       lookAheadToken = lookAheadToken parsingData

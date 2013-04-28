@@ -29,6 +29,8 @@ isReservedWord (source, lexeme, token, colNum, lineNum)
         = (source, lexeme, ReservedWord MP_FIXED, colNum, lineNum)
     | map toLower lexeme == "float"
         = (source, lexeme, ReservedWord MP_FLOAT, colNum, lineNum)
+    | map toLower lexeme == "string"
+        = (source, lexeme, ReservedWord MP_STRING, colNum, lineNum)
     | map toLower lexeme == "for"
         = (source, lexeme, ReservedWord MP_FOR, colNum, lineNum)
     | map toLower lexeme == "function"
