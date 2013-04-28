@@ -450,7 +450,7 @@ simpleExpression parsingData
                                 , current_lexeme = current_lexeme parsingData
                                 , intermediateCode = (intermediateCode parsingData)
                                 , tagAlong = tagAlong parsingData
-                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True}
+                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = idType (semanticRecord parsingData)}
                                 }
                     else parsingData)
 
@@ -563,7 +563,7 @@ factor parsingData
                                 , current_lexeme = current_lexeme parsingData
                                 , intermediateCode = (intermediateCode parsingData)
                                 , tagAlong = tagAlong parsingData
-                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True}
+                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = idType (semanticRecord parsingData)}
                                 }
         destination = searchSymbolTables parsingData (current_lexeme parsingData)
 
@@ -743,7 +743,7 @@ statement parsingData
                   , current_lexeme= current_lexeme assData
                   , intermediateCode = intermediateCode assData
                   , tagAlong = tagAlong assData
-                  , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord assData), isFloat = False}
+                  , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord assData), isFloat = False, idType = "none"}
                 }
 
 emptyStatement :: ParsingData -> ParsingData
@@ -873,9 +873,21 @@ assignmentStatement parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = (intermediateCode parsingData)
                                     , tagAlong = tagAlong parsingData
-                                    , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True}
+                                    , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = "float"}
                                     }
-                    else parsingData)
+                    else ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData)
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = False, idType = "integer"}
+                                    })
         destination = searchSymbolTables parsingData (current_lexeme parsingData)
 
 --IfStatement ⟶ "if" BooleanExpression "then" Statement OptionalElsePart

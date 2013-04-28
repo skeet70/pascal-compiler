@@ -20,6 +20,7 @@ syntaxError errorList parsingData = ParsingData {   lookAheadToken=(lookAheadTok
                                         , symbolTables=(symbolTables parsingData)
                                         , errorString="Expected " ++ errorList ++ " but found " ++ unwrapToken (lookAheadToken parsingData)
                                         , intermediateCode = intermediateCode parsingData
+                                        , semanticRecord = semanticRecord parsingData
                                     }
 
 -- Generic called whenever a terminal is encountered. Gets the next token from

@@ -30,6 +30,7 @@ generateProcedureLabel parsingData procedureLabel
             , semanticRecord = SemanticRecord {
                     labelNumber = procedureLabel
                   , isFloat = isFloat (semanticRecord parsingData)
+                  , idType = idType (semanticRecord parsingData)
             } }
 
 generateProcedureEnd :: ParsingData -> Int -> ParsingData
@@ -50,37 +51,50 @@ generateProcedureEnd parsingData procedureLabel
 --Generates code to pop a value into a given variable
 generatePopDestination :: ParsingData -> ScopeData -> ParsingData
 generatePopDestination parsingData scopeData = 
-      (if isFloat (semanticRecord parsingData) == True
-            then ParsingData {
-                                      lookAheadToken = lookAheadToken parsingData
-                                    , hasFailed = hasFailed parsingData
-                                    , line = line parsingData
-                                    , column = column parsingData
-                                    , errorString = errorString parsingData
-                                    , input = input parsingData
-                                    , symbolTables = symbolTables parsingData
-                                    , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["CASTSF","POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"]
-                                    , tagAlong = tagAlong parsingData
-                                    , semanticRecord = semanticRecord parsingData }
+      (if isFloat (semanticRecord parsingData) == True && idType (semanticRecord parsingData) /= "integer"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["CASTSF","POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else if isFloat (semanticRecord parsingData) == True && idType (semanticRecord parsingData) == "integer"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["CASTSI","POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
             else ParsingData {
-                                      lookAheadToken = lookAheadToken parsingData
-                                    , hasFailed = hasFailed parsingData
-                                    , line = line parsingData
-                                    , column = column parsingData
-                                    , errorString = errorString parsingData
-                                    , input = input parsingData
-                                    , symbolTables = symbolTables parsingData
-                                    , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["CASTSI","POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"]
-                                    , tagAlong = tagAlong parsingData
-                                    , semanticRecord = semanticRecord parsingData })
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["CASTSI","POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData })
 
 --Generates code to push a literal into the stack
 generatePushLiterals :: ParsingData -> ParsingData
 generatePushLiterals parsingData = 
       (if unwrapToken (lookAheadToken parsingData) == "MP_STRING_LIT"
-            then ParsingData {
+            then  ParsingData {
                           lookAheadToken = lookAheadToken parsingData
                         , hasFailed = hasFailed parsingData
                         , line = line parsingData
@@ -92,44 +106,70 @@ generatePushLiterals parsingData =
                         , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ "\"" ++ current_lexeme parsingData ++ "\""]
                         , tagAlong = tagAlong parsingData
                         , semanticRecord = semanticRecord parsingData }
-            else if isFloat (semanticRecord parsingData) == True
-                  then  ParsingData {
-                                lookAheadToken = lookAheadToken parsingData
-                              , hasFailed = hasFailed parsingData
-                              , line = line parsingData
-                              , column = column parsingData
-                              , errorString = errorString parsingData
-                              , input = input parsingData
-                              , symbolTables = symbolTables parsingData
-                              , current_lexeme = current_lexeme parsingData
-                              , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData, "CASTSF"]
-                              , tagAlong = tagAlong parsingData
-                              , semanticRecord = semanticRecord parsingData }
-            else  if any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER"]
-                        then ParsingData {
-                                lookAheadToken = lookAheadToken parsingData
-                              , hasFailed = hasFailed parsingData
-                              , line = line parsingData
-                              , column = column parsingData
-                              , errorString = errorString parsingData
-                              , input = input parsingData
-                              , symbolTables = symbolTables parsingData
-                              , current_lexeme = current_lexeme parsingData
-                              , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData, "CASTSI"]
-                              , tagAlong = tagAlong parsingData
-                              , semanticRecord = semanticRecord parsingData }
-                        else ParsingData {
-                                lookAheadToken = lookAheadToken parsingData
-                              , hasFailed = hasFailed parsingData
-                              , line = line parsingData
-                              , column = column parsingData
-                              , errorString = errorString parsingData
-                              , input = input parsingData
-                              , symbolTables = symbolTables parsingData
-                              , current_lexeme = current_lexeme parsingData
-                              , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData]
-                              , tagAlong = tagAlong parsingData
-                              , semanticRecord = semanticRecord parsingData })
+            else if isFloat (semanticRecord parsingData) == True && idType (semanticRecord parsingData) /= "integer"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData, "CASTSF"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else if isFloat (semanticRecord parsingData) == True && idType (semanticRecord parsingData) == "integer"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData, "CASTSI"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else  if any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER"] && idType (semanticRecord parsingData) == "float"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData, "CASTSF"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else  if any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER"] && idType (semanticRecord parsingData) /= "float"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData, "CASTSI"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData })
 
 --Generates code to push a register onto the stack
 generatePushIdentifier :: ParsingData -> ScopeData -> ParsingData
@@ -671,6 +711,7 @@ generateStartWhile parsingData
                   , semanticRecord = SemanticRecord {
                           labelNumber = (labelNumber (semanticRecord parsingData)) + 2
                         , isFloat = isFloat (semanticRecord (parsingData))
+                        , idType = idType (semanticRecord parsingData)
                   }}
 
 -- Generates the branch step for a while. Should be done after the comparison
@@ -735,6 +776,7 @@ generateStartRepeat parsingData
                   , semanticRecord = SemanticRecord {
                           labelNumber = (labelNumber (semanticRecord parsingData)) + 1
                         , isFloat = isFloat (semanticRecord (parsingData))
+                        , idType = idType (semanticRecord parsingData)
                   }}
 
 -- Takes in ParsingData and the label number from the start of the while loop.
@@ -795,6 +837,7 @@ generateStartFor parsingData
                   , semanticRecord = SemanticRecord {
                           labelNumber = (labelNumber (semanticRecord parsingData)) + 2
                         , isFloat = isFloat (semanticRecord (parsingData))
+                        , idType = idType (semanticRecord parsingData)
                   }}
 
 -- Generates the branch step for a for loop. Should be done after the comparison
