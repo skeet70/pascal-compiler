@@ -3,6 +3,8 @@ module Parser.Helper where
 import Parser.ParsingData
 import Scanner.TokenTable
 import Scanner.ScannerData
+import Data.List
+import IntermediateCode.IRHelpers
 
 import Debug.Trace
 
@@ -17,6 +19,7 @@ syntaxError errorList parsingData = ParsingData {   lookAheadToken=(lookAheadTok
                                         , input=(input parsingData)
                                         , symbolTables=(symbolTables parsingData)
                                         , errorString="Expected " ++ errorList ++ " but found " ++ unwrapToken (lookAheadToken parsingData)
+                                        , intermediateCode = intermediateCode parsingData
                                     }
 
 -- Generic called whenever a terminal is encountered. Gets the next token from
@@ -43,6 +46,10 @@ match parsingData = ParsingData {     lookAheadToken=if
                                         then []
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
+                                    , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData
                                 }
 
 -- Specific matching case called for an unkown terminal at the end of a terminal
@@ -71,6 +78,10 @@ r_paren_match parsingData
                             then []
                             else (tail (input parsingData))
                         , symbolTables=(symbolTables parsingData)
+                        , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                        , intermediateCode = intermediateCode parsingData
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData
                     }
     | otherwise
         = syntaxError "MP_RPAREN" parsingData
@@ -102,6 +113,10 @@ l_paren_match parsingData
                             then []
                             else (tail (input parsingData))
                         , symbolTables=(symbolTables parsingData)
+                        , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                        , intermediateCode = intermediateCode parsingData
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData
                     }
     | otherwise
         = syntaxError "MP_LPAREN" parsingData
@@ -133,6 +148,10 @@ assignment_match parsingData
                             then []
                             else (tail (input parsingData))
                         , symbolTables=(symbolTables parsingData)
+                        , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                        , intermediateCode = intermediateCode parsingData
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData
                     }
     | otherwise
         = syntaxError "MP_ASSIGN" parsingData
@@ -164,6 +183,10 @@ then_match parsingData
                             then []
                             else (tail (input parsingData))
                         , symbolTables=(symbolTables parsingData)
+                        , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                        , intermediateCode = intermediateCode parsingData
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData
                     }
     | otherwise
         = syntaxError "MP_THEN" parsingData
@@ -194,6 +217,10 @@ until_match parsingData
                                         then []
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
+                                    , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData
                                 }
     | otherwise
         = syntaxError "MP_UNTIL" parsingData
@@ -224,6 +251,10 @@ do_match parsingData
                                         then []
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
+                                    , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData
                                 }
     | otherwise
         = syntaxError "MP_DO" parsingData
@@ -254,6 +285,10 @@ semic_match parsingData
                                         then []
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
+                                    , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData
                                 }
     | otherwise
         = syntaxError "MP_SCOLON" parsingData
@@ -284,6 +319,10 @@ period_match parsingData
                                         then []
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
+                                    , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData
                                 }
     | otherwise
         = syntaxError "MP_PERIOD" parsingData
@@ -314,6 +353,10 @@ colon_match parsingData
                                         then []
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
+                                    , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData
                                 }
     | otherwise
         = syntaxError "MP_COLON" parsingData
@@ -344,6 +387,10 @@ end_match parsingData
                                         then []
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
+                                    , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData
                                 }
     | otherwise
         = syntaxError "MP_END" parsingData
@@ -374,6 +421,10 @@ ident_match parsingData
                                         then []
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
+                                    , current_lexeme= lexeme_scan(head(tail (input parsingData)))
+                                    , intermediateCode = intermediateCode parsingData
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData
                                 }
     | otherwise
         = syntaxError "MP_IDENTIFIER" parsingData
@@ -404,7 +455,95 @@ eof_match parsingData
                                         then []
                                         else (tail (input parsingData))
                                     , symbolTables=(symbolTables parsingData)
-                                    , errorString="Parse complete, stop poking me!"
+                                    , intermediateCode = intermediateCode parsingData
+                                    , errorString=";Parse complete, stop poking me!"
+                                    , semanticRecord = semanticRecord parsingData
                                 }
     | otherwise
         = syntaxError "MP_EOF" parsingData
+
+typeInsert :: ParsingData -> [String] -> String -> ParsingData
+typeInsert parsingData listData givenType
+    | checker /= givenType
+        = typeInsert otherNewParseData  newListData givenType
+    | otherwise
+        = insertData newParsingData scopeData
+      where
+        checker = 
+            (if (length listData >= 3) 
+            then listData!!2
+            else last listData)
+
+        scopeData = ScopeData {   name = listData!!1
+                                , kind = listData!!0
+                                , varType = givenType
+                                , offset = length (values (last (symbolTables parsingData)))
+                                , level = 0}
+        newListData = delete (listData!!1) listData
+        newParsingData = ParsingData {    lookAheadToken = lookAheadToken parsingData
+                                        , hasFailed = hasFailed parsingData
+                                        , line = line parsingData
+                                        , column = column parsingData
+                                        , errorString = errorString parsingData
+                                        , input = input parsingData
+                                        , symbolTables = symbolTables parsingData
+                                        , current_lexeme = current_lexeme parsingData
+                                        , intermediateCode = intermediateCode parsingData
+                                        , tagAlong = []
+                                        , semanticRecord = semanticRecord parsingData }
+        otherNewParseData = insertData parsingData scopeData
+
+procedureAndFunctionInsert :: ParsingData -> [String] -> String -> ParsingData
+procedureAndFunctionInsert parsingData listData givenType
+    | checker /= givenType
+        = procedureAndFunctionInsert otherNewParseData  newListData givenType
+    | otherwise
+        = insertData newParsingData scopeData
+      where
+        checker = listData!!1
+        scopeData = ScopeData {   name = listData!!0
+                                , kind = "Parameter"
+                                , varType = givenType
+                                , offset = length (values (last (symbolTables parsingData)))
+                                , level = 0}
+        newListData = delete (listData!!0) listData
+        newParsingData = ParsingData {    lookAheadToken = lookAheadToken parsingData
+                                        , hasFailed = hasFailed parsingData
+                                        , line = line parsingData
+                                        , column = column parsingData
+                                        , errorString = errorString parsingData
+                                        , input = input parsingData
+                                        , symbolTables = symbolTables parsingData
+                                        , current_lexeme = current_lexeme parsingData
+                                        , intermediateCode = intermediateCode parsingData
+                                        , tagAlong = [] 
+                                        , semanticRecord = semanticRecord parsingData}
+        otherNewParseData = insertData parsingData scopeData
+
+--showTables :: [SymbolTable] -> [SymbolTable]
+--showTables symbolTables
+--    | length symbolTables /= 0
+--        = trace(outputString) showTables symbolTables
+--      where
+--        newVals = values (head symbolTables)
+--        outputString = [name newScope] ++ [kind newScope] ++ [varType newScope] ++ [show $ offset newScope]
+--            where
+--                newScope = head newVals
+
+getNextLabelForIf :: ParsingData -> ParsingData
+getNextLabelForIf parsingData = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = intermediateCode parsingData
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = newSemRecord }
+    where
+        newSemRecord = SemanticRecord { labelNumber = (labelNumber (semanticRecord parsingData)) + 2
+                                      , isFloat = isFloat (semanticRecord parsingData)
+                                      }

@@ -1,0 +1,115 @@
+
+Modified by:
+Patrick Berens [patrickcberens@gmail.com]
+June 27, 2012
+
+Original:
+From: Chris M. Boroni [cs450@esus.cs.montana.edu]
+Sent: Tuesday, April 03, 2001 5:29 PM
+To: Ross Rockford J
+Subject: Most recent uMachine...
+
+The files are as follows...
+
+  ucode.c
+    uCode is the driver for the uMachine emulator. It processes the command
+    line arguments, connects to the source file, and directs the machine to
+    load/execute the uCode source program.
+
+  umach.h & umach.c
+    uMach represents the uMachine hardware. It defines the structures, sizes,
+    and enumerations used throughout the uMachine. Primarily, uMach creates
+    registers, RAM, the code space and the label space and implements the
+    basic memory access routines for the uMachine (registers, RAM & stack).
+
+  uexec.h & uexec.c
+    uExec represents the uMachine fetch & execute cycle. Using the code space
+    and a loaded uCode program, the uExec routines execute the various uCode
+    operations until a HLT instruction is reach (normal termination), an END
+    instruction is reached (abnormal termination) or a run-time error occurs.
+
+  uload.h & uload.c
+    uLoad represents the uMachine assembly loader. In conjunction with the
+    Flex uScan, a uCode source file is scanned and minimally "parsed" so that
+    the format of the instructions can be validated. When finished, the code
+    space contains the internal representation of the uCode program used by
+    uExec to run the program.
+
+  uscan.h & uscan.l
+    Lastly, uScan represents the Flex scanner helper routines. The flex spec
+    (uscan.l) generates a scanner that returns tokens to the uLoad routines.
+    These routines use the tokens to perform consistency checks and to report
+    errors in the uCode source file.  
+
+  uvalues.h & uvalues.c
+    Definition of validate uMachine values/types using a tagged union in the
+    header. The implementation defines operations performed on different 
+    variable types. 
+
+==========
+To compile the files, I usually do the following:
+  %flex uscan.l
+  %mv lex.yy.c uscan.c
+  %g++ -o execute *.c -ll
+
+The executable can then be run with:
+  % ./execute <filename>
+
+which will output something like:
+       uMachine  Interpreter     
+   (-*-)  [VERSION 1.0DV]  (-*-) 
+  -------------------------------
+  . . .
+  -------------------------------
+   (-*-)  [VERSION 1.0DV]  (-*-) 
+       uMachine  Interpreter     
+
+Because of the limited I/O in uPascal, input is prompted using a "?":
+  ? 123
+     Update: This is no longer true. The ? isn't added since it makes
+	 parsing output more difficult. Also, write is now supported so 
+	 proper prompts can be built into a upascal program.
+
+and output is done as a single integer value per line:
+  123
+
+==========
+I have made the load/execute pieces produce reasonable error messages that
+will help the students somewhat when they are writing uCode programs:
+
+  Load-time:
+         uMachine  Interpreter     
+     (-*-)  [VERSION 1.0DV]  (-*-) 
+    -------------------------------
+    >>>ERROR DURING LOAD: #1 CANNOT BE A DESTINATION OPERAND
+       LINE 1: DIV #1 #0 #1
+
+
+       CORRECT FORM:  DIV  src1  src2  dst
+    -------------------------------
+     (-*-)  [VERSION 1.0DV]  (-*-) 
+         uMachine  Interpreter     
+
+  Run-time:
+         uMachine  Interpreter     
+     (-*-)  [VERSION 1.0DV]  (-*-) 
+    -------------------------------
+    >>>ERROR DURING EXECUTION: DIVISION BY ZERO
+         LINE 1: DIV #1 #0 D0
+
+         REGISTER DUMP: 
+        D0    D1    D2    D3    D4    D5    D6    D7    D8    D9    SP
+        -1    -1    -1    -1    -1    -1    -1    -1    -1    -1     0
+
+==========
+The uMachine specification sheet lists practically everything relevant about
+the uMachine emulator except for:
+
+  1. uCode allows for line-comments that start with a ";"
+  2. At present, labels must be specified on their own source lines:
+
+==========
+The source code is consistently formatted (similarly to Java as I was thinking
+of translating it to Java) but there are a few things that I did because of C
+restrictions that could be done better with a different language (such as the
+occasional use of file global variables to simulate exceptions).

@@ -5,3 +5,6 @@ mp
 tags
 .DS_Store
 scannerDriver
+studentDistribution
+output.pas
+removeObjects

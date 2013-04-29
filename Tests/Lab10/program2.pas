@@ -1,0 +1,17 @@
+MOV SP D0
+ADD SP #3 SP
+MOV #0 0(D0)
+MOV #10 1(D0)
+MUL 0(D0) 1(D0) 2(D0)
+ADD 2(D0) 0(D0) 2(D0)
+PUSH #"Apples = "
+WRTS
+WRT 0(D0)
+PUSH #"; X = "
+WRTS
+WRT 1(D0)
+PUSH #" and Fred = "
+WRTS
+WRT 2(D0)
+MOV D0 SP
+HLT

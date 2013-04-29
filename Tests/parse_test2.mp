@@ -1,6 +1,6 @@
 { a sample program 2 }
 program sample2;
-  var     a, b : float;
+  var     a, b : integer;
   procedure count( n: integer; var sum: integer );
     var i: integer; { local variable }
   begin
