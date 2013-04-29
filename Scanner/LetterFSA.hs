@@ -1,4 +1,4 @@
--- Authored by: James Sonntag, and Tyler Huff-man.
+-- Authored by: James Sonntag.
 -- Creation Date: 1/24/2013
 -- Most Recent Update: 2/1/2013
 -- This file contains the State-Machines that relate to Identifiers, Strings, and Symbol.
