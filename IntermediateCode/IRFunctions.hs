@@ -994,3 +994,31 @@ generateNegativeFunction parsingData = ParsingData {
                                     , intermediateCode = (intermediateCode parsingData) ++ ["NEGS"]
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
+
+generateTrueFunction :: ParsingData -> ParsingData
+generateTrueFunction parsingData = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["PUSH" ++ " #1"]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
+
+generateFalseFunction :: ParsingData -> ParsingData
+generateFalseFunction parsingData = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["PUSH" ++ " #0"]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }

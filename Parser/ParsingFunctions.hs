@@ -547,6 +547,10 @@ factor parsingData
         = factor (match parsingData) -- add not boolean to list of functions / or apply not function after factor call
     | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN"
         = r_paren_match (expression (match parsingData))
+    | unwrapToken (lookAheadToken parsingData) == "MP_TRUE"
+        = generateTrueFunction (match parsingData)
+    | unwrapToken (lookAheadToken parsingData) == "MP_FALSE"
+        = generateFalseFunction (match parsingData)
     | otherwise
         = syntaxError "MP_IDENTIFIER, MP_INTEGER_LIT, MP_FIXED_LIT, MP_FLOAT_LIT, MP_NOT, MP_STRING_LIT, or MP_LPAREN" parsingData
     where
