@@ -547,4 +547,5 @@ getNextLabelForIf parsingData = ParsingData {
     where
         newSemRecord = SemanticRecord { labelNumber = (labelNumber (semanticRecord parsingData)) + 2
                                       , isFloat = isFloat (semanticRecord parsingData)
+                                      , idType = idType (semanticRecord parsingData)
                                       }
