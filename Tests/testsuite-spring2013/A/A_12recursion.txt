@@ -1,0 +1,32 @@
+{
+input: number??
+input: anything2
+factorial of number
+anything2
+}
+
+program fact;
+
+var number, test : integer;
+
+function factorial(N:integer; var X:integer):integer;
+  begin
+   if N = 0 then
+     begin
+       read(X);
+       factorial := 1;
+     end
+   else
+     factorial := N * factorial(N-1, X)
+   ;
+  end;
+
+begin
+
+  read(number);
+
+  writeln(factorial(number, test));
+
+  writeln(test);
+
+end.

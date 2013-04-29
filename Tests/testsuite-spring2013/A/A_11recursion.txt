@@ -1,0 +1,40 @@
+{
+input:3
+1
+3
+1
+2
+3
+2
+1
+3
+2
+1
+2
+3
+1
+3
+}
+
+program test;
+
+var discs:integer;
+
+procedure hanoi(depth, start, dest, temp:integer);
+  begin
+   if depth <> 0 then
+     begin
+       hanoi(depth-1, start, temp, dest);
+       writeln(start);
+       writeln(dest);
+       hanoi(depth-1, temp, dest, start);
+     end
+  end;
+
+begin
+
+  read(discs);
+
+  hanoi(discs,1,3,2);
+
+end.
