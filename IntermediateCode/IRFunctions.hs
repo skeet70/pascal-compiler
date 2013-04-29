@@ -146,7 +146,7 @@ generatePushLiterals parsingData =
                         , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData, "CASTSI"]
                         , tagAlong = tagAlong parsingData
                         , semanticRecord = semanticRecord parsingData }
-            else  if any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER"] && idType (semanticRecord parsingData) == "float"
+            else  if any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT"] && idType (semanticRecord parsingData) == "float"
             then  ParsingData {
                           lookAheadToken = lookAheadToken parsingData
                         , hasFailed = hasFailed parsingData
@@ -159,7 +159,7 @@ generatePushLiterals parsingData =
                         , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData, "CASTSF"]
                         , tagAlong = tagAlong parsingData
                         , semanticRecord = semanticRecord parsingData }
-            else  if any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER"] && idType (semanticRecord parsingData) /= "float"
+            else  if any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT"] && idType (semanticRecord parsingData) /= "float"
             then  ParsingData {
                           lookAheadToken = lookAheadToken parsingData
                         , hasFailed = hasFailed parsingData

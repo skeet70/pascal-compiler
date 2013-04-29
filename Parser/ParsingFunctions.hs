@@ -122,9 +122,9 @@ typeParser parsingData
     | hasFailed parsingData == True
         = parsingData
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER", "MP_FLOAT", "MP_BOOLEAN", "MP_STRING"]
-        = trace(unwrapToken(lookAheadToken parsingData)) match (typeInsert newData newList newType)
+        = match (typeInsert newData newList newType)
     | otherwise
-        = trace(unwrapToken(lookAheadToken parsingData)) syntaxError "MP_INTEGER, MP_FLOAT, MP_BOOLEAN, MP_STRING" parsingData
+        = syntaxError "MP_INTEGER, MP_FLOAT, MP_BOOLEAN, MP_STRING" parsingData
       where
         newData = ParsingData {   lookAheadToken = lookAheadToken parsingData
                                     , hasFailed = hasFailed parsingData
@@ -397,7 +397,7 @@ optionalRelationalPart parsingData
     |  any (unwrapToken (lookAheadToken parsingData) ==) ["MP_EQUAL", "MP_LTHAN", "MP_GTHAN", "MP_LEQUAL", "MP_GEQUAL", "MP_NEQUAL"]
         = generateComparison (simpleExpression (relationalOperator parsingData)) $ comparison--use relationalOperator from list after simpleExpression
     | otherwise
-        = trace(unwrapToken (lookAheadToken parsingData))parsingData -- empty string allowed
+        = parsingData -- empty string allowed
       where
         comparison = unwrapToken (lookAheadToken parsingData)
 
@@ -433,7 +433,7 @@ simpleExpression parsingData
         destination = ( if unwrapToken(lookAheadToken parsingData) == "MP_IDENTIFIER" 
                         then searchSymbolTables parsingData (current_lexeme parsingData)
                         else ScopeData {name="name",varType="none"})
-        destination2 = ( if unwrapToken(token((input parsingData)!!2)) == "MP_IDENTIFIER" && length(input parsingData) >= 2
+        destination2 = ( if length(input parsingData) >= 2 && unwrapToken(token((input parsingData)!!2)) == "MP_IDENTIFIER"
                         then searchSymbolTables parsingData (lexeme_scan((input parsingData)!!2))
                         else ScopeData {name="name",varType="none"})
         newDataID = (if unwrapToken(lookAheadToken parsingData) == "MP_IDENTIFIER" && (any (varType destination ==) ["MP_FIXED", "MP_FLOAT"] || any (varType destination2 ==) ["MP_FIXED", "MP_FLOAT"])
@@ -539,10 +539,10 @@ factor parsingData
         = parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_IDENTIFIER"
         = optionalActualParameterList (functionIdentifier (generatePushIdentifier newDataID $ destination)) -- search for and push identifier here. DONE
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_FIXED_LIT","MP_FLOAT_LIT"] || (length (input parsingData) >= 2 && any (unwrapToken(token((input parsingData)!!2)) ==) ["MP_FIXED_LIT","MP_FLOAT_LIT"] ) --Need to grab next token
+        = match (generatePushLiterals newData)
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT", "MP_STRING_LIT"]
         = match (generatePushLiterals parsingData) --insert push actual integer_lit etc. DONE
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_FIXED_LIT","MP_FLOAT_LIT"] --Need to grab next token
-        = match (generatePushLiterals newData)
     | unwrapToken (lookAheadToken parsingData) == "MP_NOT"
         = factor (match parsingData) -- add not boolean to list of functions / or apply not function after factor call
     | unwrapToken (lookAheadToken parsingData) == "MP_LPAREN"
