@@ -29,6 +29,8 @@ isReservedWord (source, lexeme, token, colNum, lineNum)
         = (source, lexeme, ReservedWord MP_FIXED, colNum, lineNum)
     | map toLower lexeme == "float"
         = (source, lexeme, ReservedWord MP_FLOAT, colNum, lineNum)
+    | map toLower lexeme == "string"
+        = (source, lexeme, ReservedWord MP_STRING, colNum, lineNum)
     | map toLower lexeme == "for"
         = (source, lexeme, ReservedWord MP_FOR, colNum, lineNum)
     | map toLower lexeme == "function"
@@ -65,6 +67,12 @@ isReservedWord (source, lexeme, token, colNum, lineNum)
         = (source, lexeme, ReservedWord MP_WRITE, colNum, lineNum)
     | map toLower lexeme == "writeln"
         = (source, lexeme, ReservedWord MP_WRITELN, colNum, lineNum)
+    | map toLower lexeme == "true"
+        = (source, lexeme, ReservedWord MP_TRUE, colNum, lineNum)
+    | map toLower lexeme == "false"
+        = (source, lexeme, ReservedWord MP_FALSE, colNum, lineNum)
+    | map toLower lexeme == "boolean"
+        = (source, lexeme, ReservedWord MP_BOOLEAN, colNum, lineNum)
     | otherwise
         = (source, lexeme, token, colNum, lineNum)
 -- The FSA that returns anything that can be an Identifier.

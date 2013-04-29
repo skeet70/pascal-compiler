@@ -30,6 +30,8 @@ generateProcedureLabel parsingData procedureLabel
             , semanticRecord = SemanticRecord {
                     labelNumber = procedureLabel
                   , isFloat = isFloat (semanticRecord parsingData)
+                  , idType = idType (semanticRecord parsingData)
+                  , crement = crement (semanticRecord parsingData)
             } }
 
 generateProcedureEnd :: ParsingData -> Int -> ParsingData
@@ -49,48 +51,208 @@ generateProcedureEnd parsingData procedureLabel
 
 --Generates code to pop a value into a given variable
 generatePopDestination :: ParsingData -> ScopeData -> ParsingData
-generatePopDestination parsingData scopeData = ParsingData {
-                                      lookAheadToken = lookAheadToken parsingData
-                                    , hasFailed = hasFailed parsingData
-                                    , line = line parsingData
-                                    , column = column parsingData
-                                    , errorString = errorString parsingData
-                                    , input = input parsingData
-                                    , symbolTables = symbolTables parsingData
-                                    , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"]
-                                    , tagAlong = tagAlong parsingData
-                                    , semanticRecord = semanticRecord parsingData }
+generatePopDestination parsingData scopeData = 
+      (if isFloat (semanticRecord parsingData) == True && idType (semanticRecord parsingData) /= "integer"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["CASTSF","POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else if isFloat (semanticRecord parsingData) == True && idType (semanticRecord parsingData) == "integer"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["CASTSI","POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else if idType (semanticRecord parsingData) == "string"
+            then ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["CASTSI", "POP " ++ show (offset scopeData) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData })
 
 --Generates code to push a literal into the stack
 generatePushLiterals :: ParsingData -> ParsingData
-generatePushLiterals parsingData = ParsingData {
-                                      lookAheadToken = lookAheadToken parsingData
-                                    , hasFailed = hasFailed parsingData
-                                    , line = line parsingData
-                                    , column = column parsingData
-                                    , errorString = errorString parsingData
-                                    , input = input parsingData
-                                    , symbolTables = symbolTables parsingData
-                                    , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData]
-                                    , tagAlong = tagAlong parsingData
-                                    , semanticRecord = semanticRecord parsingData }
+generatePushLiterals parsingData = 
+      (if unwrapToken (lookAheadToken parsingData) == "MP_STRING_LIT"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ "\"" ++ current_lexeme parsingData ++ "\""]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else if isFloat (semanticRecord parsingData) == True && idType (semanticRecord parsingData) /= "integer"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData, "CASTSF"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else if isFloat (semanticRecord parsingData) == True && idType (semanticRecord parsingData) == "integer"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData, "CASTSI"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else  if any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT"] && idType (semanticRecord parsingData) == "float"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData, "CASTSF"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else  if any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT"] && idType (semanticRecord parsingData) /= "float"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData, "CASTSI"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ "#" ++ current_lexeme parsingData]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData })
 
 --Generates code to push a register onto the stack
 generatePushIdentifier :: ParsingData -> ScopeData -> ParsingData
-generatePushIdentifier parsingData scopeData = ParsingData {
-                                      lookAheadToken = lookAheadToken parsingData
-                                    , hasFailed = hasFailed parsingData
-                                    , line = line parsingData
-                                    , column = column parsingData
-                                    , errorString = errorString parsingData
-                                    , input = input parsingData
-                                    , symbolTables = symbolTables parsingData
-                                    , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
-                                    , tagAlong = tagAlong parsingData
-                                    , semanticRecord = semanticRecord parsingData }
+generatePushIdentifier parsingData scopeData = 
+      (if varType scopeData == "MP_STRING" || varType scopeData == "MP_BOOLEAN"
+            then ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else if isFloat (semanticRecord parsingData) == True && idType (semanticRecord parsingData) /= "integer"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")", "CASTSF"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else if isFloat (semanticRecord parsingData) == True && idType (semanticRecord parsingData) == "integer"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")", "CASTSI"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else if isFloat (semanticRecord parsingData) == False && idType (semanticRecord parsingData) == "float"
+            then  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")", "CASTSF"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else  ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["PUSH " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")", "CASTSI"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData })
+
 
 --Increments the stack by one, used for reserving memory for storing variables into registers
 generateStackIncrement :: ParsingData -> ParsingData
@@ -137,6 +299,20 @@ generateWriteFunction parsingData = ParsingData {
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
+generateWriteLineFunction :: ParsingData -> ParsingData
+generateWriteLineFunction parsingData = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["WRTLNS"]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
+
 --Generates code to create an "If" function
 generateIfFunction :: ParsingData -> Int -> ParsingData
 generateIfFunction parsingData labelValue = ParsingData {
@@ -177,6 +353,20 @@ insertIfLabelFunction parsingData labelValue = ParsingData {
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = (intermediateCode parsingData) ++ ["BR " ++ "L" ++ show labelValue] ++ ["L" ++ show (labelValue-1) ++ ":"]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
+
+castToFloatFunction :: ParsingData -> ParsingData
+castToFloatFunction parsingData = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["CASTSF"]
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }
 
@@ -297,7 +487,7 @@ generateStackModifier parsingData operator
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["ADDSF"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CASTSF","ADDSF"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | operator ==  "MP_MINUS"
@@ -310,7 +500,7 @@ generateStackModifier parsingData operator
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["SUBSF"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CASTSF","SUBSF"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | operator ==  "MP_TIMES"
@@ -323,10 +513,10 @@ generateStackModifier parsingData operator
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["MULSF"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CASTSF","MULSF"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
-      | operator ==  "MP_DIV"
+      | operator ==  "MP_DIV" || operator == "MP_FSLASH"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -336,7 +526,7 @@ generateStackModifier parsingData operator
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["DIVSF"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CASTSF","DIVSF"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | operator ==  "MP_AND"
@@ -396,7 +586,59 @@ generateStackModifier parsingData operator
 -- Generates the code for the comparison and branch.
 generateComparison :: ParsingData -> String -> ParsingData
 generateComparison parsingData comparison
-      | comparison == "MP_EQUALS"
+      | comparison == "MP_EQUAL" && (isFloat (semanticRecord parsingData) == False || isBool (semanticRecord parsingData) == True)
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPEQS"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = newSemanticRecord }
+      | comparison == "MP_LTHAN" && (isFloat (semanticRecord parsingData) == False || isBool (semanticRecord parsingData) == True)
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPLTS"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = newSemanticRecord }
+      | comparison == "MP_GTHAN" && (isFloat (semanticRecord parsingData) == False || isBool (semanticRecord parsingData) == True)
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGTS"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = newSemanticRecord }
+      | comparison == "MP_LEQUAL" && (isFloat (semanticRecord parsingData) == False || isBool (semanticRecord parsingData) == True)
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPLES"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = newSemanticRecord }
+      | comparison == "MP_GEQUAL" && (isFloat (semanticRecord parsingData) == False || isBool (semanticRecord parsingData) == True)
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -407,6 +649,32 @@ generateComparison parsingData comparison
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["CMPGES"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = newSemanticRecord }
+      | comparison == "MP_NEQUAL" && (isFloat (semanticRecord parsingData) == False || isBool (semanticRecord parsingData) == True)
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPNES"]
+                  , tagAlong = tagAlong parsingData
+                  , semanticRecord = newSemanticRecord }
+      | comparison == "MP_EQUAL"
+            = ParsingData {
+                    lookAheadToken = lookAheadToken parsingData
+                  , hasFailed = hasFailed parsingData
+                  , line = line parsingData
+                  , column = column parsingData
+                  , errorString = errorString parsingData
+                  , input = input parsingData
+                  , symbolTables = symbolTables parsingData
+                  , current_lexeme = current_lexeme parsingData
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPEQSF"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_LTHAN"
@@ -419,7 +687,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPLTS"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPLTSF"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_GTHAN"
@@ -432,7 +700,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGTS"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGTSF"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_LEQUAL"
@@ -445,7 +713,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPLES"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPLESF"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_GEQUAL"
@@ -458,7 +726,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGES"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGESF"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_NEQUAL"
@@ -471,9 +739,15 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGES"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPNESF"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
+      where
+            newSemanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData)
+                                                , isFloat = isFloat (semanticRecord parsingData)
+                                                , idType = idType (semanticRecord parsingData)
+                                                , crement = crement (semanticRecord parsingData)
+                                                , isBool = False}
 
 -- Takes in parsing data, and outputs code for the start of a while loop. Which
 -- means it just sets a label and increments the label counter for both it's
@@ -496,6 +770,8 @@ generateStartWhile parsingData
                   , semanticRecord = SemanticRecord {
                           labelNumber = (labelNumber (semanticRecord parsingData)) + 2
                         , isFloat = isFloat (semanticRecord (parsingData))
+                        , idType = idType (semanticRecord parsingData)
+                        , crement = crement (semanticRecord parsingData)
                   }}
 
 -- Generates the branch step for a while. Should be done after the comparison
@@ -560,6 +836,8 @@ generateStartRepeat parsingData
                   , semanticRecord = SemanticRecord {
                           labelNumber = (labelNumber (semanticRecord parsingData)) + 1
                         , isFloat = isFloat (semanticRecord (parsingData))
+                        , idType = idType (semanticRecord parsingData)
+                        , crement = crement (semanticRecord parsingData)
                   }}
 
 -- Takes in ParsingData and the label number from the start of the while loop.
@@ -620,6 +898,8 @@ generateStartFor parsingData
                   , semanticRecord = SemanticRecord {
                           labelNumber = (labelNumber (semanticRecord parsingData)) + 2
                         , isFloat = isFloat (semanticRecord (parsingData))
+                        , idType = idType (semanticRecord parsingData)
+                        , crement = crement (semanticRecord parsingData)
                   }}
 
 -- Generates the branch step for a for loop. Should be done after the comparison
@@ -663,21 +943,35 @@ generateEndFor parsingData forLabelStart
                   , semanticRecord = semanticRecord parsingData
             }
 
-generateIncrementFunction :: ParsingData -> ScopeData -> ParsingData
-generateIncrementFunction  parsingData scopeData = ParsingData {
-                                      lookAheadToken = lookAheadToken parsingData
-                                    , hasFailed = hasFailed parsingData
-                                    , line = line parsingData
-                                    , column = column parsingData
-                                    , errorString = errorString parsingData
-                                    , input = input parsingData
-                                    , symbolTables = symbolTables parsingData
-                                    , current_lexeme = current_lexeme parsingData
-                                    , intermediateCode = (intermediateCode parsingData) ++ 
-                                    ["ADD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")" 
-                                    ++ " #1 " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
-                                    , tagAlong = tagAlong parsingData
-                                    , semanticRecord = semanticRecord parsingData }
+generateCrementFunction :: ParsingData -> ScopeData -> ParsingData
+generateCrementFunction parsingData scopeData = 
+      (if crement (semanticRecord parsingData) == "to"
+            then ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ 
+                        ["ADD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")" 
+                        ++ " #1 " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData }
+            else ParsingData {
+                          lookAheadToken = lookAheadToken parsingData
+                        , hasFailed = hasFailed parsingData
+                        , line = line parsingData
+                        , column = column parsingData
+                        , errorString = errorString parsingData
+                        , input = input parsingData
+                        , symbolTables = symbolTables parsingData
+                        , current_lexeme = current_lexeme parsingData
+                        , intermediateCode = (intermediateCode parsingData) ++ ["RD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                        , tagAlong = tagAlong parsingData
+                        , semanticRecord = semanticRecord parsingData })
 
 generateDecrementFunction :: ParsingData -> ScopeData -> ParsingData
 generateDecrementFunction  parsingData scopeData = ParsingData {
@@ -690,5 +984,47 @@ generateDecrementFunction  parsingData scopeData = ParsingData {
                                     , symbolTables = symbolTables parsingData
                                     , current_lexeme = current_lexeme parsingData
                                     , intermediateCode = (intermediateCode parsingData) ++ ["RD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
+
+generateNegativeFunction :: ParsingData -> ParsingData
+generateNegativeFunction parsingData = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["NEGS"]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
+
+generateTrueFunction :: ParsingData -> ParsingData
+generateTrueFunction parsingData = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["PUSH" ++ " #1"]
+                                    , tagAlong = tagAlong parsingData
+                                    , semanticRecord = semanticRecord parsingData }
+
+generateFalseFunction :: ParsingData -> ParsingData
+generateFalseFunction parsingData = ParsingData {
+                                      lookAheadToken = lookAheadToken parsingData
+                                    , hasFailed = hasFailed parsingData
+                                    , line = line parsingData
+                                    , column = column parsingData
+                                    , errorString = errorString parsingData
+                                    , input = input parsingData
+                                    , symbolTables = symbolTables parsingData
+                                    , current_lexeme = current_lexeme parsingData
+                                    , intermediateCode = (intermediateCode parsingData) ++ ["PUSH" ++ " #0"]
                                     , tagAlong = tagAlong parsingData
                                     , semanticRecord = semanticRecord parsingData }

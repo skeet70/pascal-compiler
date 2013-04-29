@@ -11,4 +11,7 @@ module IntermediateCode.IRHelpers where
 -- operation needs to use float/fixed numbers instead of integers.
 data SemanticRecord = SemanticRecord { labelNumber :: Int
                                      , isFloat :: Bool
+                                     , idType :: String
+                                     , crement :: String
+                                     , isBool :: Bool
                                     } deriving (Show)
