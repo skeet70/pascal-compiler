@@ -394,10 +394,10 @@ optionalRelationalPart :: ParsingData -> ParsingData
 optionalRelationalPart parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_EQUALS", "MP_LTHAN", "MP_GTHAN", "MP_LEQUAL", "MP_GTHAN", "MP_NEQUAL"]
+    |  any (unwrapToken (lookAheadToken parsingData) ==) ["MP_EQUAL", "MP_LTHAN", "MP_GTHAN", "MP_LEQUAL", "MP_GEQUAL", "MP_NEQUAL"]
         = generateComparison (simpleExpression (relationalOperator parsingData)) $ comparison--use relationalOperator from list after simpleExpression
     | otherwise
-        = parsingData -- empty string allowed
+        = trace(unwrapToken (lookAheadToken parsingData))parsingData -- empty string allowed
       where
         comparison = unwrapToken (lookAheadToken parsingData)
 
@@ -411,10 +411,10 @@ relationalOperator :: ParsingData -> ParsingData
 relationalOperator parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_EQUALS", "MP_LTHAN", "MP_GTHAN", "MP_LEQUAL", "MP_GEQUAL", "MP_NEQUAL"]
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_EQUAL", "MP_LTHAN", "MP_GTHAN", "MP_LEQUAL", "MP_GEQUAL", "MP_NEQUAL"]
         = match parsingData -- hold relationalOperator in list for use in optionalRelationalPart
     | otherwise
-        = syntaxError "MP_EQUALS, MP_LTHAN, MP_GTHAN, MP_LEQUAL, MP_GEQUAL, or MP_NEQUAL" parsingData
+        = syntaxError "MP_EQUAL, MP_LTHAN, MP_GTHAN, MP_LEQUAL, MP_GEQUAL, or MP_NEQUAL" parsingData
 
 -- SimpleExpression        ⟶ OptionalSign Term TermTail
 simpleExpression :: ParsingData -> ParsingData
@@ -448,7 +448,7 @@ simpleExpression parsingData
                                 , current_lexeme = current_lexeme parsingData
                                 , intermediateCode = (intermediateCode parsingData)
                                 , tagAlong = tagAlong parsingData
-                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = idType (semanticRecord parsingData), crement = crement (semanticRecord parsingData)}
+                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = idType (semanticRecord parsingData), crement = crement (semanticRecord parsingData), isBool = isBool(semanticRecord parsingData)}
                                 }
                     else parsingData)
 
@@ -509,7 +509,7 @@ factorTail :: ParsingData -> ParsingData
 factorTail parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_TIMES", "MP_DIV", "MP_MOD", "MP_AND"]
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_TIMES", "MP_DIV", "MP_MOD", "MP_AND", "MP_FSLASH"]
         = factorTail (generateStackModifier (factor (multiplyingOperator parsingData)) $! operator) --muls/divs/etc after factor, before factorTail
     | otherwise
         = parsingData -- empty string allowed
@@ -524,7 +524,7 @@ multiplyingOperator :: ParsingData -> ParsingData
 multiplyingOperator parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_TIMES", "MP_DIV", "MP_MOD", "MP_AND"]
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_TIMES", "MP_DIV", "MP_MOD", "MP_AND", "MP_FSLASH"]
         = match parsingData --add to list of functions
     | otherwise
         = syntaxError "MP_TIMES, MP_DIV, MP_MOD, or MP_AND" parsingData
@@ -538,7 +538,7 @@ factor parsingData
     | hasFailed parsingData == True
         = parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_IDENTIFIER"
-        = optionalActualParameterList (functionIdentifier (generatePushIdentifier parsingData $ destination)) -- search for and push identifier here. DONE
+        = optionalActualParameterList (functionIdentifier (generatePushIdentifier newDataID $ destination)) -- search for and push identifier here. DONE
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_INTEGER_LIT", "MP_STRING_LIT"]
         = match (generatePushLiterals parsingData) --insert push actual integer_lit etc. DONE
     | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_FIXED_LIT","MP_FLOAT_LIT"] --Need to grab next token
@@ -565,9 +565,24 @@ factor parsingData
                                 , current_lexeme = current_lexeme parsingData
                                 , intermediateCode = (intermediateCode parsingData)
                                 , tagAlong = tagAlong parsingData
-                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = idType (semanticRecord parsingData), crement = crement (semanticRecord parsingData)}
+                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = True, idType = idType (semanticRecord parsingData), crement = crement (semanticRecord parsingData), isBool = isBool(semanticRecord parsingData)}
                                 }
         destination = searchSymbolTables parsingData (current_lexeme parsingData)
+        newDataID = (if varType destination == "MP_BOOLEAN"
+                    then ParsingData {
+                                  lookAheadToken = lookAheadToken parsingData
+                                , hasFailed = hasFailed parsingData
+                                , line = line parsingData
+                                , column = column parsingData
+                                , errorString = errorString parsingData
+                                , input = input parsingData
+                                , symbolTables = symbolTables parsingData
+                                , current_lexeme = current_lexeme parsingData
+                                , intermediateCode = (intermediateCode parsingData)
+                                , tagAlong = tagAlong parsingData
+                                , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData), isFloat = isFloat (semanticRecord parsingData), idType = idType (semanticRecord parsingData), crement = crement (semanticRecord parsingData), isBool = True}
+                                }
+                    else parsingData)
 
 -- ProgramIdentifier       ⟶ Identifier
 programIdentifier :: ParsingData -> ParsingData
@@ -718,7 +733,7 @@ statement parsingData
         = compoundStatement parsingData
     | unwrapToken (lookAheadToken parsingData) ==  "MP_READ"
         = readStatement parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_WRITE", "MP_WRITELN", "MP_FSLASH"]
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_WRITE", "MP_WRITELN"]
         = writeStatement parsingData
     | unwrapToken (lookAheadToken parsingData) == "MP_IDENTIFIER"
         = newData
@@ -745,7 +760,7 @@ statement parsingData
                   , current_lexeme= current_lexeme assData
                   , intermediateCode = intermediateCode assData
                   , tagAlong = tagAlong assData
-                  , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord assData), isFloat = False, idType = "none", crement = crement (semanticRecord parsingData)}
+                  , semanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord assData), isFloat = False, idType = "none", crement = crement (semanticRecord parsingData), isBool = isBool(semanticRecord parsingData)}
                 }
 
 emptyStatement :: ParsingData -> ParsingData
@@ -798,8 +813,6 @@ writeStatement parsingData
         = r_paren_match (writeParameterTail (writeParameter (l_paren_match (match parsingData)))) --call write function after writeParameter
     | unwrapToken (lookAheadToken parsingData) == "MP_WRITELN"
         = r_paren_match (writeLineParameterTail (writeLineParameter (l_paren_match (match parsingData))))
-    | unwrapToken (lookAheadToken parsingData) == "MP_FSLASH"
-        = match parsingData
     | otherwise
         = syntaxError "MP_WRITE, MP_WRITELN, or /" parsingData
 
@@ -976,7 +989,7 @@ forStatement parsingData
                                                         $ destination))
                                             $ destination)
                                         $ destination))
-                                    "MP_EQUALS")) 
+                                    "MP_EQUAL")) 
                         startLabel))
                     destination)
                 startLabel

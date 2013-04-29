@@ -13,4 +13,5 @@ data SemanticRecord = SemanticRecord { labelNumber :: Int
                                      , isFloat :: Bool
                                      , idType :: String
                                      , crement :: String
+                                     , isBool :: Bool
                                     } deriving (Show)

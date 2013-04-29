@@ -41,7 +41,7 @@ driver = do
         lexeme = ""
         column = 1
         line = 1
-        parsingData = ParsingData {hasFailed=False, input=[], symbolTables=[], semanticRecord = SemanticRecord { labelNumber=0, isFloat=False, idType="none", crement="none"}}
+        parsingData = ParsingData {hasFailed=False, input=[], symbolTables=[], semanticRecord = SemanticRecord { labelNumber=0, isFloat=False, idType="none", crement="none", isBool = False}}
 
 scanFile :: (String, String, Token, Int, Int) -> ParsingData -> ParsingData
 scanFile (source, lexeme, token_in, column_in, line_in) parsingData

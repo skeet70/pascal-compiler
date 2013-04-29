@@ -188,7 +188,7 @@ generatePushLiterals parsingData =
 --Generates code to push a register onto the stack
 generatePushIdentifier :: ParsingData -> ScopeData -> ParsingData
 generatePushIdentifier parsingData scopeData = 
-      (if varType scopeData == "MP_STRING"
+      (if varType scopeData == "MP_STRING" || varType scopeData == "MP_BOOLEAN"
             then ParsingData {
                           lookAheadToken = lookAheadToken parsingData
                         , hasFailed = hasFailed parsingData
@@ -516,7 +516,7 @@ generateStackModifier parsingData operator
                   , intermediateCode = (intermediateCode parsingData) ++ ["CASTSF","MULSF"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
-      | operator ==  "MP_DIV"
+      | operator ==  "MP_DIV" || operator == "MP_FSLASH"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -586,7 +586,7 @@ generateStackModifier parsingData operator
 -- Generates the code for the comparison and branch.
 generateComparison :: ParsingData -> String -> ParsingData
 generateComparison parsingData comparison
-      | comparison == "MP_EQUALS" && isFloat (semanticRecord parsingData) == False
+      | comparison == "MP_EQUAL" && (isFloat (semanticRecord parsingData) == False || isBool (semanticRecord parsingData) == True)
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -596,10 +596,10 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGES"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPEQS"]
                   , tagAlong = tagAlong parsingData
-                  , semanticRecord = semanticRecord parsingData }
-      | comparison == "MP_LTHAN" && isFloat (semanticRecord parsingData) == False
+                  , semanticRecord = newSemanticRecord }
+      | comparison == "MP_LTHAN" && (isFloat (semanticRecord parsingData) == False || isBool (semanticRecord parsingData) == True)
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -611,8 +611,8 @@ generateComparison parsingData comparison
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["CMPLTS"]
                   , tagAlong = tagAlong parsingData
-                  , semanticRecord = semanticRecord parsingData }
-      | comparison == "MP_GTHAN" && isFloat (semanticRecord parsingData) == False
+                  , semanticRecord = newSemanticRecord }
+      | comparison == "MP_GTHAN" && (isFloat (semanticRecord parsingData) == False || isBool (semanticRecord parsingData) == True)
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -624,8 +624,8 @@ generateComparison parsingData comparison
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["CMPGTS"]
                   , tagAlong = tagAlong parsingData
-                  , semanticRecord = semanticRecord parsingData }
-      | comparison == "MP_LEQUAL" && isFloat (semanticRecord parsingData) == False
+                  , semanticRecord = newSemanticRecord }
+      | comparison == "MP_LEQUAL" && (isFloat (semanticRecord parsingData) == False || isBool (semanticRecord parsingData) == True)
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -637,8 +637,8 @@ generateComparison parsingData comparison
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["CMPLES"]
                   , tagAlong = tagAlong parsingData
-                  , semanticRecord = semanticRecord parsingData }
-      | comparison == "MP_GEQUAL" && isFloat (semanticRecord parsingData) == False
+                  , semanticRecord = newSemanticRecord }
+      | comparison == "MP_GEQUAL" && (isFloat (semanticRecord parsingData) == False || isBool (semanticRecord parsingData) == True)
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -650,8 +650,8 @@ generateComparison parsingData comparison
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["CMPGES"]
                   , tagAlong = tagAlong parsingData
-                  , semanticRecord = semanticRecord parsingData }
-      | comparison == "MP_NEQUAL" && isFloat (semanticRecord parsingData) == False
+                  , semanticRecord = newSemanticRecord }
+      | comparison == "MP_NEQUAL" && (isFloat (semanticRecord parsingData) == False || isBool (semanticRecord parsingData) == True)
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -663,8 +663,8 @@ generateComparison parsingData comparison
                   , current_lexeme = current_lexeme parsingData
                   , intermediateCode = (intermediateCode parsingData) ++ ["CMPNES"]
                   , tagAlong = tagAlong parsingData
-                  , semanticRecord = semanticRecord parsingData }
-      | comparison == "MP_EQUALS"
+                  , semanticRecord = newSemanticRecord }
+      | comparison == "MP_EQUAL"
             = ParsingData {
                     lookAheadToken = lookAheadToken parsingData
                   , hasFailed = hasFailed parsingData
@@ -674,7 +674,7 @@ generateComparison parsingData comparison
                   , input = input parsingData
                   , symbolTables = symbolTables parsingData
                   , current_lexeme = current_lexeme parsingData
-                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPGESF"]
+                  , intermediateCode = (intermediateCode parsingData) ++ ["CMPEQSF"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
       | comparison == "MP_LTHAN"
@@ -742,6 +742,12 @@ generateComparison parsingData comparison
                   , intermediateCode = (intermediateCode parsingData) ++ ["CMPNESF"]
                   , tagAlong = tagAlong parsingData
                   , semanticRecord = semanticRecord parsingData }
+      where
+            newSemanticRecord = SemanticRecord { labelNumber = labelNumber (semanticRecord parsingData)
+                                                , isFloat = isFloat (semanticRecord parsingData)
+                                                , idType = idType (semanticRecord parsingData)
+                                                , crement = crement (semanticRecord parsingData)
+                                                , isBool = False}
 
 -- Takes in parsing data, and outputs code for the start of a while loop. Which
 -- means it just sets a label and increments the label counter for both it's
