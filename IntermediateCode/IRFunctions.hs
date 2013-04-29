@@ -955,8 +955,8 @@ generateCrementFunction parsingData scopeData =
                         , input = input parsingData
                         , symbolTables = symbolTables parsingData
                         , current_lexeme = current_lexeme parsingData
-                        , intermediateCode = (intermediateCode parsingData) ++ 
-                        ["ADD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")" 
+                        , intermediateCode = (intermediateCode parsingData) ++
+                        ["ADD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"
                         ++ " #1 " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
                         , tagAlong = tagAlong parsingData
                         , semanticRecord = semanticRecord parsingData }
@@ -969,7 +969,9 @@ generateCrementFunction parsingData scopeData =
                         , input = input parsingData
                         , symbolTables = symbolTables parsingData
                         , current_lexeme = current_lexeme parsingData
-                        , intermediateCode = (intermediateCode parsingData) ++ ["RD " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
+                        , intermediateCode = (intermediateCode parsingData) ++
+                        ["SUB " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"
+                        ++ " #1 " ++ (show (offset scopeData)) ++ "(D" ++ (show (level scopeData)) ++ ")"]
                         , tagAlong = tagAlong parsingData
                         , semanticRecord = semanticRecord parsingData })
 
