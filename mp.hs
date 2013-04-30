@@ -34,9 +34,8 @@ driver = do
     (filename:_) <- getArgs
     source <- readFile filename
     if ((dropWhile (/= '.') filename) == ".mp")
-    then parse (scanFile (getToken (source, lexeme, column, line)) parsingData)
-    --then extractData $ getToken (source, lexeme, column, line)
-    else putStrLn "Please insert a valid file."
+        then parse (scanFile (getToken (source, lexeme, column, line)) parsingData)
+        else putStrLn "Please insert a valid file."
       where
         lexeme = ""
         column = 1
