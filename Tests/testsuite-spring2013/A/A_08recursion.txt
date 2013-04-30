@@ -1,0 +1,48 @@
+{
+6
+5
+input: 8
+9
+8
+8
+8
+}
+
+program test;
+
+var x:integer;
+
+procedure one(a:integer);
+ begin
+ a := a+1;
+ writeln(a);
+ end;
+
+procedure two(var b:integer);
+ begin
+ read(b);
+ one(b);
+ writeln(b);
+ end;
+
+procedure three(var c:integer);
+  begin
+  if (c mod 2) = 0 then
+    two(c)
+  else
+    one(c)
+  ;
+  writeln(c);
+  end;
+
+begin
+
+  x := 5;
+  three(x);
+
+  x := 10;
+  three(x);
+
+  writeln(x);
+
+end.

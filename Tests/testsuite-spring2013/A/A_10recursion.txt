@@ -1,0 +1,52 @@
+{
+input: 13
+14
+13
+13
+3
+2
+2
+}
+
+program test;
+
+var x:integer;
+
+function one(a:integer): integer;
+ begin
+ a := a+1;
+ writeln(a);
+ one := a;
+ end;
+
+function two(var b:integer): integer;
+var nothing : integer;
+ begin
+ read(b);
+ nothing := one(b);
+ writeln(b);
+ two := b;
+ end;
+
+procedure three(var c:integer);
+var nothing : integer;
+  begin
+  if (c mod 2) = 1 then
+    nothing := two(c)
+  else
+    nothing := one(c)
+  ;
+  writeln(c);
+  end;
+
+begin
+
+  x := 11;
+  three(x);
+
+  x := 2;
+  three(x);
+
+  writeln(x);
+
+end.

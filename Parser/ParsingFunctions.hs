@@ -421,8 +421,10 @@ simpleExpression :: ParsingData -> ParsingData
 simpleExpression parsingData
     | hasFailed parsingData == True
         = parsingData
-    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS", "MP_MINUS", "MP_NOT", "MP_LPAREN"]
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_PLUS","MP_NOT", "MP_LPAREN"]
         = termTail (term (optionalSign parsingData))
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_MINUS"]
+        = termTail (generateNegativeFunction(term (optionalSign parsingData)))
     | getTokenType (lookAheadToken parsingData) ==  "IdentifierOrLiteral" --If float change to true
         = termTail (term (optionalSign newDataID))
     | getTokenType (lookAheadToken parsingData) ==  "ReservedWord"
@@ -472,7 +474,7 @@ optionalSign :: ParsingData -> ParsingData
 optionalSign parsingData
     | hasFailed parsingData == True
         = parsingData
-    | unwrapToken (lookAheadToken parsingData) == "MP_MINUS"
+    | any (unwrapToken (lookAheadToken parsingData) ==) ["MP_MINUS", "MP_PLUS"]
         = match parsingData --add +/-1 to stack for numbers then MULS after id is put on stack
     | otherwise
         = parsingData --empty string allowed
