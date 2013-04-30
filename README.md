@@ -8,11 +8,11 @@ This is a [microPascal](http://hypertextbookshop.com/transPL/Resources/microPasc
 The program is written in [Haskell](http://www.haskell.org/haskellwiki/Haskell) and should be compiled with GHC 7.4.2+. Clone the repository or download an archive of the project using the links to the left. Then issue the following commands in the terminal to compile the driver:
 
     cd ~/pascal-compiler
-    ghc mp.hs
+    ghc --make mp.hs
 
 The compiler can then be run using this terminal command:
     
-    mp input_file.mp
+    ./mp input_file.mp
 
 Which will compile the microPascal source code, and output a semantic analyzer data file. Several test input files are provided in the `pascal-compiler/Tests/` folder.
 
